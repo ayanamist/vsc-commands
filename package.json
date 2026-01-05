@@ -1,9 +1,9 @@
 {
   "name": "commands-open-terminal-in-editor",
   "displayName": "Commands: Open Terminal in Editor",
-  "description": "Launch terminal presets in the editor area with custom icons.",
+  "description": "Launch terminal presets in the editor area from status bar buttons.",
   "icon": "media/commands.png",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {
@@ -28,6 +28,7 @@
     "editor"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onView:commands.presets",
     "onCommand:commands.runPreset",
     "onCommand:commands.pickPreset",
