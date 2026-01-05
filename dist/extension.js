@@ -1,0 +1,282 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.activate = activate;
+exports.deactivate = deactivate;
+const vscode = __importStar(require("vscode"));
+const fs_1 = require("fs");
+const path = __importStar(require("path"));
+const CONFIG_SECTION = 'commands';
+const PRESETS_KEY = 'presets';
+const STATUS_BAR_PRESETS_KEY = 'statusBarPresets';
+const ASSET_FOLDER = '.commands-assets';
+function loadPresets() {
+    const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return cfg.get(PRESETS_KEY, []);
+}
+function loadStatusBarPresetIds() {
+    const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return cfg.get(STATUS_BAR_PRESETS_KEY, []);
+}
+function resolveIcon(icon, ctx) {
+    if (!icon)
+        return;
+    const trimmed = icon.trim();
+    if (!trimmed)
+        return;
+    if (trimmed.startsWith('codicon:')) {
+        return new vscode.ThemeIcon(trimmed.slice('codicon:'.length));
+    }
+    if (trimmed.startsWith('asset:')) {
+        const name = trimmed.slice('asset:'.length);
+        const baseName = name.endsWith('.svg') ? name.replace(/\.svg$/, '') : name;
+        const lightUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', `${baseName}-light.svg`);
+        const darkUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', `${baseName}-dark.svg`);
+        if ((0, fs_1.existsSync)(lightUri.fsPath) && (0, fs_1.existsSync)(darkUri.fsPath)) {
+            return { light: lightUri, dark: darkUri };
+        }
+        const fileName = `${baseName}.svg`;
+        return vscode.Uri.joinPath(ctx.extensionUri, 'media', fileName);
+    }
+    if (trimmed.startsWith('file:') || trimmed.startsWith('http:') || trimmed.startsWith('https:')) {
+        return vscode.Uri.parse(trimmed);
+    }
+    return vscode.Uri.parse(trimmed);
+}
+function getWorkspaceRoot() {
+    var _a, _b;
+    return (_b = (_a = vscode.workspace.workspaceFolders) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.uri;
+}
+function getAssetFolderUri() {
+    const root = getWorkspaceRoot();
+    if (!root)
+        return;
+    return vscode.Uri.joinPath(root, ASSET_FOLDER);
+}
+function isLocalFileIcon(icon) {
+    if (icon.startsWith('file:'))
+        return true;
+    return path.isAbsolute(icon);
+}
+async function copyIconIfNeeded(icon, presetId) {
+    if (!icon)
+        return;
+    if (!isLocalFileIcon(icon))
+        return icon;
+    const assetRoot = getAssetFolderUri();
+    if (!assetRoot)
+        return icon;
+    const srcPath = icon.startsWith('file:')
+        ? vscode.Uri.parse(icon).fsPath
+        : icon;
+    const ext = path.extname(srcPath) || '.svg';
+    const safeBase = presetId.replace(/[^a-zA-Z0-9_-]/g, '_') || 'preset';
+    const destName = `${safeBase}-${Date.now()}${ext}`;
+    const destUri = vscode.Uri.joinPath(assetRoot, destName);
+    try {
+        await fs_1.promises.mkdir(assetRoot.fsPath, { recursive: true });
+        await fs_1.promises.copyFile(srcPath, destUri.fsPath);
+        return destUri.toString();
+    }
+    catch {
+        return icon;
+    }
+}
+function getTerminalLocation() {
+    var _a;
+    const anyVscode = vscode;
+    if (((_a = anyVscode.TerminalLocation) === null || _a === void 0 ? void 0 : _a.Editor) !== undefined) {
+        return anyVscode.TerminalLocation.Editor;
+    }
+    return { viewColumn: vscode.ViewColumn.One, preserveFocus: false };
+}
+function runPreset(preset, ctx) {
+    const term = vscode.window.createTerminal({
+        name: preset.nickname,
+        iconPath: resolveIcon(preset.icon, ctx),
+        location: getTerminalLocation()
+    });
+    term.sendText(preset.command, true);
+    term.show(false);
+}
+class PresetItem extends vscode.TreeItem {
+    constructor(preset, iconPath) {
+        super(preset.nickname, vscode.TreeItemCollapsibleState.None);
+        this.preset = preset;
+        this.description = preset.command;
+        this.iconPath = iconPath;
+        this.contextValue = 'commandsPreset';
+        this.command = {
+            command: 'commands.runPreset',
+            title: 'Run Preset',
+            arguments: [preset]
+        };
+    }
+}
+class PresetProvider {
+    constructor(ctx) {
+        this.ctx = ctx;
+        this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.statusBarItems = [];
+    }
+    refresh() {
+        this._onDidChangeTreeData.fire(undefined);
+        this.refreshStatusBar();
+    }
+    getTreeItem(element) {
+        return element;
+    }
+    getChildren() {
+        const presets = loadPresets().filter(p => p.enabled !== false);
+        return presets.map(p => new PresetItem(p, resolveIcon(p.icon, this.ctx)));
+    }
+    refreshStatusBar() {
+        var _a;
+        for (const item of this.statusBarItems) {
+            item.dispose();
+        }
+        this.statusBarItems = [];
+        const presets = loadPresets().filter(p => p.enabled !== false);
+        const toShow = presets.filter(p => p.showInStatusBar !== false);
+        for (const preset of toShow) {
+            const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+            const icon = ((_a = preset.icon) === null || _a === void 0 ? void 0 : _a.startsWith('codicon:'))
+                ? preset.icon.replace('codicon:', '$(') + ')'
+                : '$(terminal)';
+            item.text = `${icon} ${preset.nickname}`;
+            item.tooltip = `${preset.command}`;
+            if (preset.statusBarColor) {
+                item.color = preset.statusBarColor;
+            }
+            item.command = {
+                command: 'commands.runPreset',
+                title: 'Run Preset',
+                arguments: [preset]
+            };
+            item.show();
+            this.statusBarItems.push(item);
+            this.ctx.subscriptions.push(item);
+        }
+    }
+}
+function activate(context) {
+    const provider = new PresetProvider(context);
+    context.subscriptions.push(vscode.window.createTreeView('commands.presets', { treeDataProvider: provider }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.runPreset', (preset) => {
+        if (!preset)
+            return;
+        runPreset(preset, context);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.pickPreset', async () => {
+        const presets = loadPresets().filter(p => p.enabled !== false);
+        const pick = await vscode.window.showQuickPick(presets.map(p => ({ label: p.nickname, description: p.command, preset: p })), { placeHolder: 'Run terminal preset' });
+        if (!pick)
+            return;
+        runPreset(pick.preset, context);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.openEditor', () => {
+        const panel = vscode.window.createWebviewPanel('commands.editor', 'Commands Presets', vscode.ViewColumn.Active, { enableScripts: true, retainContextWhenHidden: true });
+        panel.webview.html = getEditorHtml(panel.webview, context.extensionUri);
+        panel.webview.onDidReceiveMessage(async (msg) => {
+            if ((msg === null || msg === void 0 ? void 0 : msg.type) === 'requestPresets') {
+                panel.webview.postMessage({ type: 'presets', presets: loadPresets() });
+            }
+            if ((msg === null || msg === void 0 ? void 0 : msg.type) === 'pickIcon') {
+                const picked = await vscode.window.showOpenDialog({
+                    canSelectMany: false,
+                    filters: { 'Images': ['svg', 'png'] }
+                });
+                if (!(picked === null || picked === void 0 ? void 0 : picked.length))
+                    return;
+                panel.webview.postMessage({ type: 'pickedIcon', rowId: msg.rowId, path: picked[0].fsPath });
+            }
+            if ((msg === null || msg === void 0 ? void 0 : msg.type) === 'savePresets') {
+                const presets = Array.isArray(msg.presets) ? msg.presets : [];
+                const updated = [];
+                for (const preset of presets) {
+                    const icon = await copyIconIfNeeded(preset.icon, preset.id);
+                    updated.push({ ...preset, icon });
+                }
+                await vscode.workspace.getConfiguration(CONFIG_SECTION).update(PRESETS_KEY, updated, vscode.ConfigurationTarget.Global);
+                provider.refresh();
+                panel.webview.postMessage({ type: 'saved' });
+            }
+        });
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.openSettingsJson', () => {
+        return vscode.commands.executeCommand('workbench.action.openSettingsJson');
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.refreshPresets', () => provider.refresh()));
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration(`${CONFIG_SECTION}.${PRESETS_KEY}`)) {
+            provider.refresh();
+        }
+        if (e.affectsConfiguration(`${CONFIG_SECTION}.${STATUS_BAR_PRESETS_KEY}`)) {
+            provider.refresh();
+        }
+    }));
+    provider.refreshStatusBar();
+}
+function deactivate() { }
+function getEditorHtml(webview, extensionUri) {
+    const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.css'));
+    const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.js'));
+    const assetNote = `Assets copied to: ${ASSET_FOLDER} in the workspace root. For theme-aware assets, add name-light.svg and name-dark.svg in media/ and use asset:name.`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commands Presets</title>
+  <link rel="stylesheet" href="${styleUri}">
+</head>
+<body>
+  <header>
+    <h1>Commands Presets</h1>
+    <p class="muted">Use asset:claude, asset:codex, asset:gemini, codicon:terminal, or a local file path. ${assetNote}</p>
+  </header>
+  <main>
+    <div class="actions">
+      <button id="add">Add Preset</button>
+      <button id="save" class="primary">Save</button>
+    </div>
+    <div id="list" class="list"></div>
+  </main>
+  <script src="${scriptUri}"></script>
+</body>
+</html>`;
+}
+//# sourceMappingURL=extension.js.map

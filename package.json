@@ -1,0 +1,164 @@
+{
+  "name": "commands",
+  "displayName": "Commands",
+  "description": "Launch terminal presets in the editor area with custom icons.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:commands.presets",
+    "onCommand:commands.runPreset",
+    "onCommand:commands.pickPreset",
+    "onCommand:commands.openEditor",
+    "onCommand:commands.openSettingsJson",
+    "onCommand:commands.refreshPresets"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "commands.runPreset",
+        "title": "Commands: Run Preset"
+      },
+      {
+        "command": "commands.pickPreset",
+        "title": "Commands: Pick Preset"
+      },
+      {
+        "command": "commands.openEditor",
+        "title": "Commands: Edit Presets"
+      },
+      {
+        "command": "commands.openSettingsJson",
+        "title": "Commands: Edit settings.json"
+      },
+      {
+        "command": "commands.refreshPresets",
+        "title": "Commands: Refresh Presets"
+      }
+    ],
+    "configuration": {
+      "title": "Commands",
+      "properties": {
+        "commands.presets": {
+          "type": "array",
+          "description": "Terminal presets shown in the Commands view.",
+          "markdownDescription": "Terminal presets shown in the Commands view.\n\nExample:\n```json\n\"commands.presets\": [\n  {\n    \"id\": \"claude\",\n    \"nickname\": \"Claude\",\n    \"command\": \"claude\",\n    \"icon\": \"asset:claude\",\n    \"enabled\": true\n  }\n]\n```\n\nIcon formats: `asset:name`, `codicon:terminal`, or `file:/absolute/path/icon.svg`. The editor can copy local files into a workspace asset folder and update the icon automatically. Theme-aware assets can be provided as `name-light.svg` and `name-dark.svg` under `media/`.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Stable id for the preset."
+              },
+              "nickname": {
+                "type": "string",
+                "description": "Label shown in the Commands view and terminal name."
+              },
+              "command": {
+                "type": "string",
+                "description": "Shell command sent to the terminal on launch."
+              },
+              "icon": {
+                "type": "string",
+                "description": "Icon source: asset:name, codicon:name, or file:/absolute/path/icon.svg."
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the preset is shown and launchable."
+              },
+              "showInStatusBar": {
+                "type": "boolean",
+                "default": true,
+                "description": "Show this preset as a status bar button."
+              },
+              "statusBarColor": {
+                "type": "string",
+                "description": "Optional status bar text color (CSS color or theme color id)."
+              }
+            },
+            "required": ["id", "nickname", "command"]
+          },
+          "default": [
+            {
+              "id": "claude",
+              "nickname": "Claude",
+              "command": "claude",
+              "icon": "asset:claude",
+              "enabled": true
+            },
+            {
+              "id": "codex",
+              "nickname": "Codex",
+              "command": "codex",
+              "icon": "asset:codex",
+              "enabled": true
+            },
+            {
+              "id": "gemini",
+              "nickname": "Gemini",
+              "command": "gemini",
+              "icon": "asset:gemini",
+              "enabled": true
+            }
+          ]
+        },
+        "commands.statusBarPresets": {
+          "type": "array",
+          "description": "Preset ids to show in the status bar. Leave empty to show the first 3 enabled presets.",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "commands",
+          "title": "Commands",
+          "icon": "media/commands.svg"
+        }
+      ]
+    },
+    "views": {
+      "commands": [
+        {
+          "id": "commands.presets",
+          "name": "Presets"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "commands.openEditor",
+          "when": "view == commands.presets",
+          "group": "navigation"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "commands.presets",
+        "contents": "[Edit presets](command:commands.openEditor) or [edit settings.json](command:commands.openSettingsJson) to customize your presets."
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.5.4"
+  }
+}
