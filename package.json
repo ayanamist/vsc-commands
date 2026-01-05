@@ -15,7 +15,6 @@
     "onCommand:commands.runPreset",
     "onCommand:commands.pickPreset",
     "onCommand:commands.openEditor",
-    "onCommand:commands.toggleStatusBar",
     "onCommand:commands.enableStatusBar",
     "onCommand:commands.disableStatusBar",
     "onCommand:commands.openSettingsJson",
@@ -35,10 +34,6 @@
       {
         "command": "commands.openEditor",
         "title": "Commands: Edit Presets"
-      },
-      {
-        "command": "commands.toggleStatusBar",
-        "title": "Show in Status Bar"
       },
       {
         "command": "commands.enableStatusBar",

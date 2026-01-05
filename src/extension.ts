@@ -213,15 +213,6 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('commands.toggleStatusBar', async (item: Preset | PresetItem) => {
-      const preset = item instanceof PresetItem ? item.preset : item;
-      if (!preset) return;
-      await setStatusBarFlag(preset, preset.showInStatusBar === false);
-      provider.refresh();
-    })
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand('commands.enableStatusBar', async (item: Preset | PresetItem) => {
       const preset = item instanceof PresetItem ? item.preset : item;
       if (!preset) return;

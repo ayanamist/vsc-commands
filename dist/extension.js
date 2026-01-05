@@ -211,13 +211,6 @@ function activate(context) {
             return;
         runPreset(preset, context);
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('commands.toggleStatusBar', async (item) => {
-        const preset = item instanceof PresetItem ? item.preset : item;
-        if (!preset)
-            return;
-        await setStatusBarFlag(preset, preset.showInStatusBar === false);
-        provider.refresh();
-    }));
     context.subscriptions.push(vscode.commands.registerCommand('commands.enableStatusBar', async (item) => {
         const preset = item instanceof PresetItem ? item.preset : item;
         if (!preset)
