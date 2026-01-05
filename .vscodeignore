@@ -1,0 +1,6 @@
+node_modules
+src
+tsconfig.json
+potential assets
+.vscode
+**/.DS_Store

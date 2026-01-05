@@ -1,14 +1,31 @@
 {
-  "name": "commands",
-  "displayName": "Commands",
+  "name": "commands-open-terminal-in-editor",
+  "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area with custom icons.",
+  "icon": "media/commands.png",
   "version": "0.0.1",
-  "publisher": "local",
+  "publisher": "GenerousCorp",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielraffel/Commands"
+  },
+  "bugs": {
+    "url": "https://github.com/danielraffel/Commands/issues"
+  },
+  "homepage": "https://github.com/danielraffel/Commands",
   "engines": {
-    "vscode": "^1.0.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "terminal",
+    "presets",
+    "commands",
+    "workflow",
+    "editor"
   ],
   "activationEvents": [
     "onView:commands.presets",
