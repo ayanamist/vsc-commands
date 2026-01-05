@@ -15,6 +15,7 @@
     "onCommand:commands.runPreset",
     "onCommand:commands.pickPreset",
     "onCommand:commands.openEditor",
+    "onCommand:commands.toggleStatusBar",
     "onCommand:commands.openSettingsJson",
     "onCommand:commands.refreshPresets"
   ],
@@ -32,6 +33,10 @@
       {
         "command": "commands.openEditor",
         "title": "Commands: Edit Presets"
+      },
+      {
+        "command": "commands.toggleStatusBar",
+        "title": "Show in Status Bar"
       },
       {
         "command": "commands.openSettingsJson",
@@ -91,6 +96,7 @@
               "nickname": "Claude",
               "command": "claude",
               "icon": "asset:claude",
+              "showInStatusBar": true,
               "enabled": true
             },
             {
@@ -98,6 +104,7 @@
               "nickname": "Codex",
               "command": "codex",
               "icon": "asset:codex",
+              "showInStatusBar": true,
               "enabled": true
             },
             {
@@ -105,6 +112,7 @@
               "nickname": "Gemini",
               "command": "gemini",
               "icon": "asset:gemini",
+              "showInStatusBar": true,
               "enabled": true
             }
           ]
@@ -137,6 +145,14 @@
       ]
     },
     "menus": {
+      "view/item/context": [
+        {
+          "command": "commands.toggleStatusBar",
+          "when": "view == commands.presets && (viewItem == commandsPresetStatusBarOn || viewItem == commandsPresetStatusBarOff)",
+          "group": "1_commands",
+          "toggled": "viewItem == commandsPresetStatusBarOn"
+        }
+      ],
       "view/title": [
         {
           "command": "commands.openEditor",

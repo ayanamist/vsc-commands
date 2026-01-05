@@ -200,7 +200,7 @@ function readPresetsFromDom() {
 }
 
 addBtn.addEventListener('click', () => {
-  presets.push({ id: '', nickname: '', command: '', icon: '', enabled: true });
+  presets.push({ id: '', nickname: '', command: '', icon: '', enabled: true, showInStatusBar: true });
   render();
 });
 

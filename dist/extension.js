@@ -137,7 +137,9 @@ class PresetItem extends vscode.TreeItem {
         this.preset = preset;
         this.description = preset.command;
         this.iconPath = iconPath;
-        this.contextValue = 'commandsPreset';
+        this.contextValue = preset.showInStatusBar === false
+            ? 'commandsPresetStatusBarOff'
+            : 'commandsPresetStatusBarOn';
         this.command = {
             command: 'commands.runPreset',
             title: 'Run Preset',
@@ -199,6 +201,19 @@ function activate(context) {
         if (!preset)
             return;
         runPreset(preset, context);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.toggleStatusBar', async (item) => {
+        const preset = item instanceof PresetItem ? item.preset : item;
+        if (!preset)
+            return;
+        const presets = loadPresets();
+        const index = presets.findIndex(p => p.id === preset.id);
+        if (index === -1)
+            return;
+        const current = presets[index];
+        presets[index] = { ...current, showInStatusBar: current.showInStatusBar === false };
+        await vscode.workspace.getConfiguration(CONFIG_SECTION).update(PRESETS_KEY, presets, vscode.ConfigurationTarget.Global);
+        provider.refresh();
     }));
     context.subscriptions.push(vscode.commands.registerCommand('commands.pickPreset', async () => {
         const presets = loadPresets().filter(p => p.enabled !== false);
