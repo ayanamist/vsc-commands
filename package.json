@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area with custom icons.",
   "icon": "media/commands.png",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/danielraffel/Commands/issues"
   },
-  "homepage": "https://github.com/danielraffel/Commands",
+  "homepage": "https://www.generouscorp.com/Commands/index.html",
   "engines": {
     "vscode": "^1.95.0"
   },
