@@ -16,6 +16,8 @@
     "onCommand:commands.pickPreset",
     "onCommand:commands.openEditor",
     "onCommand:commands.toggleStatusBar",
+    "onCommand:commands.enableStatusBar",
+    "onCommand:commands.disableStatusBar",
     "onCommand:commands.openSettingsJson",
     "onCommand:commands.refreshPresets"
   ],
@@ -37,6 +39,14 @@
       {
         "command": "commands.toggleStatusBar",
         "title": "Show in Status Bar"
+      },
+      {
+        "command": "commands.enableStatusBar",
+        "title": "Show in Status Bar"
+      },
+      {
+        "command": "commands.disableStatusBar",
+        "title": "Hide from Status Bar"
       },
       {
         "command": "commands.openSettingsJson",
@@ -147,10 +157,14 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "commands.toggleStatusBar",
-          "when": "view == commands.presets && (viewItem == commandsPresetStatusBarOn || viewItem == commandsPresetStatusBarOff)",
-          "group": "1_commands",
-          "toggled": "viewItem == commandsPresetStatusBarOn"
+          "command": "commands.enableStatusBar",
+          "when": "view == commands.presets && viewItem == commandsPresetStatusBarOff",
+          "group": "1_commands"
+        },
+        {
+          "command": "commands.disableStatusBar",
+          "when": "view == commands.presets && viewItem == commandsPresetStatusBarOn",
+          "group": "1_commands"
         }
       ],
       "view/title": [

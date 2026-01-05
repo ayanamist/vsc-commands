@@ -131,6 +131,15 @@ function runPreset(preset, ctx) {
     term.sendText(preset.command, true);
     term.show(false);
 }
+async function setStatusBarFlag(preset, enabled) {
+    const presets = loadPresets();
+    const index = presets.findIndex(p => p.id === preset.id);
+    if (index === -1)
+        return;
+    const current = presets[index];
+    presets[index] = { ...current, showInStatusBar: enabled };
+    await vscode.workspace.getConfiguration(CONFIG_SECTION).update(PRESETS_KEY, presets, vscode.ConfigurationTarget.Global);
+}
 class PresetItem extends vscode.TreeItem {
     constructor(preset, iconPath) {
         super(preset.nickname, vscode.TreeItemCollapsibleState.None);
@@ -206,13 +215,21 @@ function activate(context) {
         const preset = item instanceof PresetItem ? item.preset : item;
         if (!preset)
             return;
-        const presets = loadPresets();
-        const index = presets.findIndex(p => p.id === preset.id);
-        if (index === -1)
+        await setStatusBarFlag(preset, preset.showInStatusBar === false);
+        provider.refresh();
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.enableStatusBar', async (item) => {
+        const preset = item instanceof PresetItem ? item.preset : item;
+        if (!preset)
             return;
-        const current = presets[index];
-        presets[index] = { ...current, showInStatusBar: current.showInStatusBar === false };
-        await vscode.workspace.getConfiguration(CONFIG_SECTION).update(PRESETS_KEY, presets, vscode.ConfigurationTarget.Global);
+        await setStatusBarFlag(preset, true);
+        provider.refresh();
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.disableStatusBar', async (item) => {
+        const preset = item instanceof PresetItem ? item.preset : item;
+        if (!preset)
+            return;
+        await setStatusBarFlag(preset, false);
         provider.refresh();
     }));
     context.subscriptions.push(vscode.commands.registerCommand('commands.pickPreset', async () => {
