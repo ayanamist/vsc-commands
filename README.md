@@ -1,55 +1,75 @@
 # Commands
 
-Commands is a VS Code extension that opens a terminal in the editor area with a command of your choice. This makes your terminal a first-class citizen next to your files, not tucked away in the panel or sidebar.
+Commands is a VS Code extension that opens terminals in the editor area with commands of your choice. This makes your terminal a first-class citizen next to your files, not tucked away in the panel or sidebar.
 
 ## What it does
 
-- Launches a terminal in the editor area and runs a preset command immediately.
-- Lets you customize presets (nickname, command, icon) and hide/show status bar buttons.
-- Ships with quick presets for Claude, Codex, and Gemini.
-- Includes a Quick Pick command for fast launching.
+- Launches terminals in the editor area and runs preset commands immediately
+- Shows quick-launch buttons in the status bar for your most-used commands
+- Supports **Command Sets** to open multiple terminals with one click
+- Ships with presets for popular coding CLIs: Claude, Codex, Gemini, Claude Chrome, Cursor, Amp, and OpenCode
+- Lets you customize everything: presets, icons, status bar visibility, and button colors
+
+## Default Setup
+
+Out of the box, Commands shows these buttons in your status bar:
+
+![Status bar buttons](media/screenshots/statusbar-buttons.png)
+
+- **Claude** - launches Claude Code CLI
+- **Codex** - launches OpenAI Codex CLI
+- **Gemini** - launches Google Gemini CLI
+- **Claude Chrome** - launches Claude with Chrome browser integration
+- **Claude | Codex** - a Command Set that opens both Claude and Codex terminals side by side
+
+Additional presets for Cursor, Amp, and OpenCode are included but hidden from the status bar by default. You can enable them in the preset editor.
 
 ## Where to find it
 
-Open the activity bar (the vertical strip of icons on the far left edge of the window). It usually contains:
-- Explorer (files)
-- Search
-- Source Control
-- Run & Debug
-- Extensions
-
-You will see a Commands icon there. Open it to access your presets.
-
-## Commands
-
-- Commands: Edit Presets
-- Commands: Pick Preset
-
-## Screenshots
-
-Activity bar view:
+Open the **activity bar** (the vertical strip of icons on the far left edge of the window). You'll see a Commands icon there. Click it to access your presets.
 
 ![Commands activity bar view](media/screenshots/activity-bar.png)
 
-Terminal in the editor area:
+Clicking any preset opens a terminal in the editor area:
 
 ![Terminal in the editor area](media/screenshots/claude-terminal-area.png)
 
-Preset editor:
+## Customizing Presets
+
+Open the preset editor from the activity bar (gear icon) or run **Commands: Edit Presets** from the command palette.
 
 ![Commands preset editor](media/screenshots/commands-settings.png)
 
-## Preset settings
+Each preset supports:
+- **Nickname** - display name shown in the activity bar and status bar
+- **Command** - shell command to run when the terminal opens
+- **Icon** - use `asset:name`, `codicon:name`, or choose a custom file
+- **Status bar** - show/hide the quick-launch button
+- **Button text color** - optional custom color for the status bar button
+- **Enabled** - show/hide the preset entirely
 
-Presets live in `settings.json` under `commands.presets`. Each preset supports:
-- `nickname` (displayed name)
-- `command` (shell command to run)
-- `icon` (asset: name, codicon: name, or file path)
-- `enabled` (show/hide preset)
-- `showInStatusBar` (show/hide status bar button)
-- `statusBarColor` (optional status bar text color)
+## Command Sets
 
-Example:
+Command Sets let you launch multiple terminals with a single click. Perfect for workflows that need several tools running simultaneously.
+
+![Command Sets editor](media/screenshots/commands-settings-command-sets.png)
+
+Each Command Set includes:
+- **Name** - custom name or auto-generated from selected presets (e.g., "Claude | Codex")
+- **Presets** - ordered list of presets to launch
+- **Status bar** - show/hide the Command Set button
+- **Focus setting** - choose whether to focus the first or last terminal when launching
+
+## Commands
+
+- **Commands: Edit Presets** - open the visual preset editor
+- **Commands: Pick Preset** - quick pick menu to launch any preset
+- **Commands: Refresh Presets** - reload presets from settings
+
+## Settings Reference
+
+Presets live in `settings.json` under `commands.presets`:
+
 ```json
 "commands.presets": [
   {
@@ -58,18 +78,38 @@ Example:
     "command": "claude",
     "icon": "asset:claude",
     "enabled": true,
-    "showInStatusBar": true
+    "showInStatusBar": true,
+    "statusBarColor": ""
   }
 ]
 ```
 
-## Terminal keybindings
+Command Sets live under `commands.commandSets`:
 
-When a terminal opened by Commands is focused, the extension can pass Shift+Tab through to the shell (so terminal UIs can use it). Toggle this with `commands.sendShiftTabToTerminal`. If your terminal UI expects a different sequence, set `commands.shiftTabSequence` (common values: `\u001b[Z` or `\u001b[1;2Z`).
+```json
+"commands.commandSets": [
+  {
+    "id": "claude-codex",
+    "name": "",
+    "presetIds": ["claude", "codex"],
+    "showInStatusBar": true,
+    "enabled": true
+  }
+]
+```
 
-## Theme-aware icons
+Additional settings:
+- `commands.commandSetFocusFirst` - focus first preset when launching a set (default: true)
+- `commands.sendShiftTabToTerminal` - pass Shift+Tab to the terminal (default: true)
+- `commands.shiftTabSequence` - escape sequence for Shift+Tab (default: `\u001b[Z`)
 
-If you add theme-aware assets, place `name-light.svg` and `name-dark.svg` in `media/` and use `asset:name`.
+## Terminal Keybindings
+
+When a terminal opened by Commands is focused, the extension passes Shift+Tab through to the shell so terminal UIs (like Claude Code's mode switcher) can use it. Toggle this with `commands.sendShiftTabToTerminal`.
+
+## Theme-aware Icons
+
+To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `media/` and reference them with `asset:name`.
 
 ## License
 

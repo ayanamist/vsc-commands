@@ -451,6 +451,11 @@ function getEditorHtml(webview, extensionUri) {
   <link rel="stylesheet" href="${styleUri}">
 </head>
 <body>
+  <div id="saveBanner" class="save-banner hidden">
+    <span>You have unsaved changes</span>
+    <button id="bannerSave" class="primary">Save</button>
+    <button id="bannerDismiss" class="dismiss">×</button>
+  </div>
   <header>
     <h1>Terminal Presets</h1>
     <p class="muted">Create shortcuts that open terminals with specific commands. Each preset appears in the activity bar and optionally in the status bar.</p>
@@ -475,6 +480,12 @@ function getEditorHtml(webview, extensionUri) {
       <span class="muted">(uncheck to focus the last preset instead)</span>
     </label>
   </section>
+  <div class="editor-settings">
+    <label>
+      <input type="checkbox" id="showSaveReminder" checked />
+      <span>Show save reminder when changes are made</span>
+    </label>
+  </div>
   <footer class="cli-links">
     <p><strong>Get the CLIs:</strong></p>
     <ul>

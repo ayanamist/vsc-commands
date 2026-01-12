@@ -1,82 +1,643 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Commands: Open Terminal in Editor</title>
-  <style>
-    :root {
-      color-scheme: light dark;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
-    }
-    body {
-      margin: 0;
-      padding: 32px;
-      max-width: 900px;
-    }
-    h1 { margin: 0 0 8px; }
-    h2 { margin-top: 28px; }
-    .muted { color: #777; }
-    .links a { display: inline-block; margin-right: 12px; }
-    code { background: rgba(127,127,127,0.2); padding: 2px 6px; border-radius: 4px; }
-    pre { background: rgba(127,127,127,0.15); padding: 12px; border-radius: 8px; overflow: auto; }
-    img { max-width: 100%; border-radius: 8px; margin: 8px 0 16px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commands | VS Code & Cursor Extension</title>
+    <meta name="description" content="Launch terminal presets in the editor area from status bar buttons. Ships with presets for Claude, Codex, Gemini, and more.">
+
+    <!-- Open Graph (iMessage, Slack, Discord, etc.) -->
+    <meta property="og:title" content="Commands: Open Terminal in Editor">
+    <meta property="og:description" content="Launch terminal presets in the editor area from status bar buttons. Ships with presets for Claude, Codex, Gemini, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://danielraffel.github.io/Commands/">
+    <meta property="og:image" content="https://raw.githubusercontent.com/danielraffel/Commands/refs/heads/main/media/commands.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Commands: Open Terminal in Editor">
+    <meta name="twitter:description" content="Launch terminal presets in the editor area from status bar buttons. Ships with presets for Claude, Codex, Gemini, and more.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/danielraffel/Commands/refs/heads/main/media/commands.png">
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111111;
+            --gray: #888888;
+            --light-gray: #f4f4f4;
+            --accent: #2a7fff;
+            --code-bg: #1c1c1c;
+            --code-text: #e0e0e0;
+            --font-main: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: "SF Mono", "Menlo", "Monaco", "Courier New", monospace;
+            --spacing-unit: 2rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            margin-bottom: var(--spacing-unit);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: calc(var(--spacing-unit) * 1.5);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        p {
+            font-size: 1.25rem;
+            max-width: 34ch;
+            color: #333;
+            margin-bottom: var(--spacing-unit);
+        }
+
+        a {
+            color: var(--text);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-unit);
+        }
+
+        section {
+            padding: calc(var(--spacing-unit) * 4) 0;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        section:first-of-type {
+            border-top: none;
+            padding-top: calc(var(--spacing-unit) * 6);
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--spacing-unit);
+        }
+
+        .col-left { grid-column: 1 / 6; }
+        .col-right { grid-column: 7 / 13; }
+        .col-full { grid-column: 1 / 13; }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .col-left, .col-right { grid-column: 1 / 13; }
+            h1 { font-size: 3rem; }
+            section { padding: calc(var(--spacing-unit) * 2) 0; }
+        }
+
+        /* Components */
+        .extension-name {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .tag-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            border: 1px solid var(--text);
+            padding: 4px 12px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .tag:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0 var(--spacing-unit) 0;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            border-bottom: 1px solid var(--light-gray);
+            padding: 1.5rem 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--text);
+            color: var(--bg);
+            padding: 1rem 2rem;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 4px;
+            margin-top: var(--spacing-unit);
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* Screenshots */
+        .screenshot {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .screenshot:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .screenshot-caption {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .screenshot-grid {
+                grid-template-columns: 1fr;
+            }
+            .screenshot-caption {
+                white-space: normal;
+            }
+        }
+
+        .screenshot-item {
+            text-align: center;
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--light-gray);
+        }
+
+        .screenshot-item img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2rem;
+            font-weight: 300;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .lightbox-close:hover {
+            opacity: 1;
+        }
+
+        /* Status bar preview */
+        .status-bar-preview {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-bar-preview span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: var(--spacing-unit) 0;
+            border-top: 4px solid var(--text);
+            margin-top: var(--spacing-unit);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        /* FAQ */
+        .faq-item {
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .faq-question {
+            padding: 1.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: color 0.2s;
+        }
+        .faq-question:hover { color: var(--accent); }
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--gray);
+            transition: transform 0.2s;
+        }
+        .faq-item.open .faq-question::after {
+            content: '-';
+        }
+        .faq-answer {
+            display: none;
+            padding-bottom: 1.5rem;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #444;
+        }
+        .faq-answer p { max-width: none; font-size: 1rem; margin-bottom: 1rem; }
+        .faq-answer p:last-child { margin-bottom: 0; }
+        .faq-item.open .faq-answer { display: block; }
+        .faq-answer code {
+            background: var(--light-gray);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* CLI list */
+        .cli-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            margin-top: 0.5rem;
+        }
+        .cli-list a {
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
-  <h1>Commands: Open Terminal in Editor</h1>
-  <p class="muted">Launch terminal presets in the editor area from status bar buttons.</p>
 
-  <div class="links">
-    <a href="https://open-vsx.org/extension/GenerousCorp/commands-open-terminal-in-editor">OpenVSX Listing</a>
-    <a href="https://marketplace.visualstudio.com/items?itemName=GenerousCorp.commands-open-terminal-in-editor">VS Code Marketplace</a>
-    <a href="https://github.com/danielraffel/Commands">GitHub Repository</a>
-  </div>
+    <main class="container">
 
-  <h2>What it does</h2>
-  <ul>
-    <li>Opens a terminal in the editor area and runs a preset command immediately.</li>
-    <li>Customize presets (nickname, command, icon) and hide/show status bar buttons.</li>
-    <li>Ships with quick presets for Claude, Codex, and Gemini.</li>
-    <li>Includes a Quick Pick command for fast launching.</li>
-  </ul>
+        <!-- Hero Section -->
+        <section style="padding-top: calc(var(--spacing-unit) * 3.5);">
+            <span class="extension-name">Commands &mdash; an extension for:</span>
+            <div class="tag-group">
+                <a href="vscode:extension/GenerousCorp.commands-open-terminal-in-editor" class="tag">VS Code</a>
+                <a href="cursor:extension/GenerousCorp.commands-open-terminal-in-editor" class="tag">Cursor</a>
+            </div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#defaults">Defaults</a>
+                <a href="#command-sets">Command Sets</a>
+                <a href="#customize">Customize</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+            <h1>Agents in tabs,<br>beside your code.</h1>
+            <div class="grid">
+                <div class="col-left">
+                    <p><b>Commands</b> launches terminals alongside your code, not tucked away in a panel. One-click status bar buttons for your favorite CLIs. Command Sets to open multiple terminals at once.</p>
+                </div>
+                <div class="col-right">
+                    <img src="media/screenshots/statusbar-buttons.png" alt="Status bar buttons" class="screenshot" onclick="openLightbox(this)">
+                    <p class="screenshot-caption">1-click status bar buttons to open your favorite CLIs in VS Code and Cursor</p>
+                </div>
+            </div>
+        </section>
 
-  <h2>Where to find it</h2>
-  <p>Open the activity bar (the vertical strip of icons on the far left edge of the window). It usually contains:</p>
-  <ul>
-    <li>Explorer (files)</li>
-    <li>Search</li>
-    <li>Source Control</li>
-    <li>Run &amp; Debug</li>
-    <li>Extensions</li>
-  </ul>
-  <p>You will see a Commands icon there.</p>
+        <!-- Features -->
+        <section id="features">
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Features</h3>
+                    <p>Everything you need to launch terminals quickly and keep them visible while you code.</p>
+                </div>
+                <div class="col-right">
+                    <ul class="feature-list">
+                        <li>Terminals open in the editor area, not the panel</li>
+                        <li>One-click status bar buttons for instant access</li>
+                        <li>Command Sets launch multiple terminals at once</li>
+                        <li>Ships with 7 presets: Claude, Codex, Gemini, Claude Chrome, Cursor, Amp, OpenCode</li>
+                        <li>Customize icons, colors, and visibility</li>
+                        <li>Visual preset editor for easy configuration</li>
+                        <li>Activity bar view for all your presets</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-  <h2>Commands</h2>
-  <ul>
-    <li>Commands: Edit Presets</li>
-    <li>Commands: Pick Preset</li>
-  </ul>
+        <!-- Default Setup -->
+        <section id="defaults">
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Default Setup</h3>
+                    <h2>Ready to go<br>out of the box.</h2>
+                </div>
+                <div class="col-right">
+                    <p>Commands ships with presets for popular coding CLIs. Four appear in your status bar by default, plus a Command Set that opens Claude and Codex together.</p>
+                    <p>Cursor, Amp, and OpenCode presets are included but hidden from the status bar. Enable them anytime in the preset editor.</p>
+                </div>
+            </div>
+            <div class="grid" style="margin-top: 2rem;">
+                <div class="col-full">
+                    <div class="screenshot-grid">
+                        <div class="screenshot-item">
+                            <img src="media/screenshots/activity-bar.png" alt="Activity bar view" onclick="openLightbox(this)">
+                            <p class="screenshot-caption">Activity bar shows all enabled presets</p>
+                        </div>
+                        <div class="screenshot-item">
+                            <img src="media/screenshots/claude-terminal-area.png" alt="Terminal in editor area" onclick="openLightbox(this)">
+                            <p class="screenshot-caption">Terminal opens right next to your code</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <h2>Preset settings</h2>
-  <p>Presets live in <code>settings.json</code> under <code>commands.presets</code>.</p>
-  <pre>{
-  "commands.presets": [
-    {
-      "id": "claude",
-      "nickname": "Claude",
-      "command": "claude",
-      "icon": "asset:claude",
-      "enabled": true,
-      "showInStatusBar": true
-    }
-  ]
-}</pre>
+        <!-- Command Sets -->
+        <section id="command-sets">
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Command Sets</h3>
+                    <h2>Launch multiple<br>terminals at once.</h2>
+                </div>
+                <div class="col-right">
+                    <p>Command Sets let you open several terminals with a single click. Perfect for workflows that need multiple tools running simultaneously.</p>
+                    <p>The default "Claude | Codex" set opens both terminals side by side. Create your own sets with any combination of presets.</p>
+                </div>
+            </div>
+            <div class="grid" style="margin-top: 2rem;">
+                <div class="col-full">
+                    <img src="media/screenshots/commands-settings-command-sets.png" alt="Command Sets editor" class="screenshot" onclick="openLightbox(this)">
+                    <p class="screenshot-caption">Create sets with any presets, choose which terminal gets focus</p>
+                </div>
+            </div>
+        </section>
 
-  <h2>Screenshots</h2>
-  <img src="media/screenshots/activity-bar.png" alt="Commands activity bar view" />
-  <img src="media/screenshots/claude-terminal-area.png" alt="Terminal in the editor area" />
-  <img src="media/screenshots/commands-settings.png" alt="Commands preset editor" />
+        <!-- Customize -->
+        <section id="customize">
+            <div class="grid">
+                <div class="col-left">
+                    <h3>Customize</h3>
+                    <h2>Make it yours.</h2>
+                </div>
+                <div class="col-right">
+                    <p>The visual preset editor lets you customize everything without touching JSON. Add new presets, change icons, set custom colors, control what appears in the status bar.</p>
+                </div>
+            </div>
+            <div class="grid" style="margin-top: 2rem;">
+                <div class="col-full">
+                    <img src="media/screenshots/commands-settings.png" alt="Preset editor" class="screenshot" onclick="openLightbox(this)">
+                    <p class="screenshot-caption">Visual editor for presets and Command Sets</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section id="faq">
+            <div class="grid">
+                <div class="col-full">
+                    <h3>FAQ</h3>
+                    <h2>Common questions.</h2>
+                </div>
+                <div class="col-full">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How do I install this extension?</div>
+                        <div class="faq-answer">
+                            <p><strong>1-click install:</strong> Click the <a href="vscode:extension/GenerousCorp.commands-open-terminal-in-editor">VS Code</a> or <a href="cursor:extension/GenerousCorp.commands-open-terminal-in-editor">Cursor</a> buttons at the top of this page to open the extension directly in your editor.</p>
+                            <p><strong>Manual install:</strong> Search for "Commands: Open Terminal in Editor" in the Extensions panel (<code>Cmd+Shift+X</code> / <code>Ctrl+Shift+X</code>).</p>
+                            <p><strong>Web listings:</strong> <a href="https://marketplace.visualstudio.com/items?itemName=GenerousCorp.commands-open-terminal-in-editor">VS Code Marketplace</a> &bull; <a href="https://open-vsx.org/extension/GenerousCorp/commands-open-terminal-in-editor">Open VSX</a></p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Where do I find the CLIs that come as presets?</div>
+                        <div class="faq-answer">
+                            <p>Commands ships with presets for these coding CLIs:</p>
+                            <div class="cli-list">
+                                <a href="https://docs.anthropic.com/en/docs/claude-code/overview">Claude Code</a>
+                                <a href="https://developers.openai.com/codex/cli/">OpenAI Codex</a>
+                                <a href="https://geminicli.com">Google Gemini</a>
+                                <a href="https://cursor.com/docs/cli/installation">Cursor Agent</a>
+                                <a href="https://ampcode.com/manual#getting-started-command-line-interface">Amp</a>
+                                <a href="https://opencode.ai">OpenCode</a>
+                            </div>
+                            <p style="margin-top: 1rem;">The "Claude Chrome" preset uses <code>claude --chrome</code> to launch Claude with browser integration.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What's a Command Set?</div>
+                        <div class="faq-answer">
+                            <p>A Command Set launches multiple terminals with one click. Instead of clicking Claude, then Codex, you click "Claude | Codex" and both open at once.</p>
+                            <p>You can create Command Sets with any combination of presets. They appear in the status bar (not the activity bar) and you can control which terminal gets focus when they launch.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Can I add my own presets?</div>
+                        <div class="faq-answer">
+                            <p>Yes! Open the preset editor (click the gear icon in the Commands activity bar, or run <strong>Commands: Edit Presets</strong> from the command palette) and click "Add Preset."</p>
+                            <p>Each preset has a nickname (display name), command (what runs in the terminal), icon, and options for status bar visibility and color.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How do I hide a preset from the status bar?</div>
+                        <div class="faq-answer">
+                            <p>Open the preset editor and uncheck "Show button" under the Status bar setting for that preset. The preset will still appear in the activity bar, just not as a status bar button.</p>
+                            <p>You can also right-click a preset in the activity bar and choose "Hide from Status Bar."</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why does Shift+Tab not work in my terminal?</div>
+                        <div class="faq-answer">
+                            <p>VS Code sometimes intercepts Shift+Tab for accessibility navigation. Commands tries to pass Shift+Tab through to your terminal (useful for CLIs like Claude Code that use it for mode switching).</p>
+                            <p>If it's not working, the extension will prompt you to disable settings that interfere. You can also manually set <code>editor.accessibilitySupport</code> to "off" in your VS Code settings.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Can I use custom icons?</div>
+                        <div class="faq-answer">
+                            <p>Yes! In the preset editor, click "Choose file" next to the Icon field to select an SVG or PNG file. The extension will copy the file to your workspace.</p>
+                            <p>You can also use built-in icons: <code>asset:claude</code>, <code>asset:codex</code>, <code>asset:gemini</code>, or any VS Code codicon like <code>codicon:terminal</code>.</p>
+                            <p>For theme-aware icons (different icons for light/dark themes), place <code>name-light.svg</code> and <code>name-dark.svg</code> in the media folder and use <code>asset:name</code>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Enlarged screenshot">
+    </div>
+
+    <footer class="container">
+        <div class="grid">
+            <div class="col-left">
+                <a href="https://danielraffel.me" style="text-decoration: none;">Daniel Raffel</a> &copy; 2026
+            </div>
+            <div class="col-right" style="text-align: right;">
+                <a href="https://github.com/danielraffel/Commands" style="text-decoration: none;">GitHub Repository</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleFaq(el) {
+            el.parentElement.classList.toggle('open');
+        }
+
+        // Lightbox functions
+        function openLightbox(img) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+            lightbox.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // Close lightbox with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // Open FAQ if hash matches
+        if (window.location.hash) {
+            const target = document.querySelector(window.location.hash);
+            if (target && target.classList.contains('faq-question')) {
+                target.parentElement.classList.add('open');
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
 </body>
 </html>

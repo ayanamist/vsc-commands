@@ -6,6 +6,10 @@ const saveBtn = document.getElementById('save');
 const setList = document.getElementById('setList');
 const addSetBtn = document.getElementById('addSet');
 const focusFirstCheckbox = document.getElementById('focusFirst');
+const saveBanner = document.getElementById('saveBanner');
+const bannerSaveBtn = document.getElementById('bannerSave');
+const bannerDismissBtn = document.getElementById('bannerDismiss');
+const showSaveReminderCheckbox = document.getElementById('showSaveReminder');
 
 // Add tooltips to header buttons
 addBtn.title = 'Add a new terminal preset';
@@ -16,6 +20,50 @@ let presets = [];
 let commandSets = [];
 let focusFirst = true;
 let dragIndex = null;
+let isDirty = false;
+let showSaveReminder = true;
+let bannerDismissed = false;
+
+// Restore state
+const savedState = vscode.getState();
+if (savedState) {
+  showSaveReminder = savedState.showSaveReminder !== false;
+  showSaveReminderCheckbox.checked = showSaveReminder;
+}
+
+function markDirty() {
+  isDirty = true;
+  bannerDismissed = false;
+  updateBanner();
+}
+
+function markClean() {
+  isDirty = false;
+  updateBanner();
+}
+
+function updateBanner() {
+  if (isDirty && showSaveReminder && !bannerDismissed) {
+    saveBanner.classList.remove('hidden');
+  } else {
+    saveBanner.classList.add('hidden');
+  }
+}
+
+bannerSaveBtn.addEventListener('click', () => {
+  saveBtn.click();
+});
+
+bannerDismissBtn.addEventListener('click', () => {
+  bannerDismissed = true;
+  updateBanner();
+});
+
+showSaveReminderCheckbox.addEventListener('change', () => {
+  showSaveReminder = showSaveReminderCheckbox.checked;
+  vscode.setState({ showSaveReminder });
+  updateBanner();
+});
 
 function slugify(value) {
   return value
@@ -59,6 +107,7 @@ function render() {
       const item = presets.splice(index, 1)[0];
       presets.splice(index - 1, 0, item);
       render();
+      markDirty();
     });
     const downBtn = document.createElement('button');
     downBtn.textContent = 'Down';
@@ -69,6 +118,7 @@ function render() {
       const item = presets.splice(index, 1)[0];
       presets.splice(index + 1, 0, item);
       render();
+      markDirty();
     });
     reorder.append(upBtn, downBtn);
 
@@ -106,6 +156,7 @@ function render() {
       const item = presets.splice(fromIndex, 1)[0];
       presets.splice(toIndex, 0, item);
       render();
+      markDirty();
     });
 
     const row1 = document.createElement('div');
@@ -200,11 +251,20 @@ function render() {
     removeBtn.addEventListener('click', () => {
       presets.splice(index, 1);
       render();
+      markDirty();
     });
 
     footer.append(enabledWrap, removeBtn);
 
     card.append(header, row1, row2, row3, footer);
+
+    // Add change listeners to mark dirty
+    [idInput, nameInput, cmdInput, iconInput, colorInput].forEach(input => {
+      input.addEventListener('input', markDirty);
+    });
+    [enabledInput, statusInput].forEach(checkbox => {
+      checkbox.addEventListener('change', markDirty);
+    });
 
     card.__inputs = { idInput, nameInput, cmdInput, iconInput, enabledInput, statusInput, colorInput };
     list.append(card);
@@ -257,6 +317,7 @@ function renderSets() {
       const item = commandSets.splice(index, 1)[0];
       commandSets.splice(index - 1, 0, item);
       renderSets();
+      markDirty();
     });
     const downBtn = document.createElement('button');
     downBtn.textContent = 'Down';
@@ -266,6 +327,7 @@ function renderSets() {
       const item = commandSets.splice(index, 1)[0];
       commandSets.splice(index + 1, 0, item);
       renderSets();
+      markDirty();
     });
     reorder.append(upBtn, downBtn);
     header.append(grip, reorder);
@@ -325,6 +387,7 @@ function renderSets() {
         selectedIds.splice(pIndex, 1);
         selectedIds.splice(pIndex - 1, 0, presetId);
         renderSets();
+        markDirty();
       });
 
       const moveDown = document.createElement('button');
@@ -336,6 +399,7 @@ function renderSets() {
         selectedIds.splice(pIndex, 1);
         selectedIds.splice(pIndex + 1, 0, presetId);
         renderSets();
+        markDirty();
       });
 
       const removePreset = document.createElement('button');
@@ -345,6 +409,7 @@ function renderSets() {
         const idx = selectedIds.indexOf(presetId);
         if (idx >= 0) selectedIds.splice(idx, 1);
         renderSets();
+        markDirty();
       });
 
       controls.append(moveUp, moveDown, removePreset);
@@ -374,6 +439,7 @@ function renderSets() {
       if (addPresetSelect.value) {
         selectedIds.push(addPresetSelect.value);
         renderSets();
+        markDirty();
       }
     });
 
@@ -419,11 +485,19 @@ function renderSets() {
     removeBtn.addEventListener('click', () => {
       commandSets.splice(index, 1);
       renderSets();
+      markDirty();
     });
 
     footer.append(enabledWrap, removeBtn);
 
     card.append(header, nameRow, presetsRow, statusRow, footer);
+
+    // Add change listeners to mark dirty
+    nameInput.addEventListener('input', markDirty);
+    [statusInput, enabledInput].forEach(checkbox => {
+      checkbox.addEventListener('change', markDirty);
+    });
+
     card.__inputs = { nameInput, statusInput, enabledInput, presetIds: selectedIds };
     setList.append(card);
   });
@@ -446,11 +520,13 @@ function readCommandSetsFromDom() {
 addBtn.addEventListener('click', () => {
   presets.push({ id: '', nickname: '', command: '', icon: '', enabled: true, showInStatusBar: true });
   render();
+  markDirty();
 });
 
 addSetBtn.addEventListener('click', () => {
   commandSets.push({ id: `set-${Date.now()}`, name: '', presetIds: [], showInStatusBar: true, enabled: true });
   renderSets();
+  markDirty();
 });
 
 saveBtn.addEventListener('click', () => {
@@ -466,6 +542,7 @@ saveBtn.addEventListener('click', () => {
 
 focusFirstCheckbox.addEventListener('change', () => {
   focusFirst = focusFirstCheckbox.checked;
+  markDirty();
 });
 
 window.addEventListener('message', event => {
@@ -482,6 +559,10 @@ window.addEventListener('message', event => {
     const card = list.children[msg.rowId];
     if (!card) return;
     card.__inputs.iconInput.value = msg.path || '';
+    markDirty();
+  }
+  if (msg.type === 'saved') {
+    markClean();
   }
 });
 
