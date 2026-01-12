@@ -169,10 +169,10 @@ function render() {
 
     const colorLabel = document.createElement('div');
     colorLabel.className = 'label';
-    colorLabel.textContent = 'Status color';
+    colorLabel.textContent = 'Button text color';
     colorLabel.title = 'Custom color for the status bar button text';
-    const colorInput = createInput(preset.statusBarColor, '#ff0000 or orange');
-    colorInput.title = 'CSS color for status bar button text (e.g. #ff0000, orange, rgb(255,0,0))';
+    const colorInput = createInput(preset.statusBarColor, '#ff6600 or orange');
+    colorInput.title = 'CSS color for the button text (e.g. #ff6600, orange)';
 
     row3.append(statusLabel, statusWrap, colorLabel, colorInput);
 

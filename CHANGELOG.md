@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.7
+- Renamed "Status color" to "Button text color" for clarity
+- Fixed "Choose file" button wrapping in icon field
+
 ## 0.0.6
 - Added tooltips and placeholders to all preset editor fields
 - Simplified header text in preset editor for better clarity

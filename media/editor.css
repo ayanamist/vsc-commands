@@ -142,6 +142,16 @@ input[type="checkbox"] {
   align-items: center;
 }
 
+.inline input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.inline button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
@@ -152,3 +162,4 @@ input[type="checkbox"] {
   font-size: 11px;
   color: var(--vscode-descriptionForeground, #888);
 }
+
