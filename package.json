@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area from status bar buttons.",
   "icon": "media/commands.png",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {

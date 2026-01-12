@@ -411,8 +411,6 @@ export function deactivate() {}
 function getEditorHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
   const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.css'));
   const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.js'));
-  const assetNote = `Assets copied to: ${ASSET_FOLDER} in the workspace root. For theme-aware assets, add name-light.svg and name-dark.svg in media/ and use asset:name.`;
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -423,8 +421,8 @@ function getEditorHtml(webview: vscode.Webview, extensionUri: vscode.Uri): strin
 </head>
 <body>
   <header>
-    <h1>Commands Presets</h1>
-    <p class="muted">Use asset:claude, asset:codex, asset:gemini, codicon:terminal, or a local file path. ${assetNote}</p>
+    <h1>Terminal Presets</h1>
+    <p class="muted">Create shortcuts that open terminals with specific commands. Each preset appears in the activity bar and optionally in the status bar.</p>
   </header>
   <main>
     <div class="actions">

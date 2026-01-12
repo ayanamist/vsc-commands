@@ -3,6 +3,10 @@
   font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 24px;
@@ -111,6 +115,7 @@ button.primary:hover {
 
 input[type="text"] {
   width: 100%;
+  min-width: 0;
   padding: 6px 8px;
   border-radius: 6px;
   border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, #5555));

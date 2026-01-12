@@ -4,6 +4,10 @@ const list = document.getElementById('list');
 const addBtn = document.getElementById('add');
 const saveBtn = document.getElementById('save');
 
+// Add tooltips to header buttons
+addBtn.title = 'Add a new terminal preset';
+saveBtn.title = 'Save all presets to settings';
+
 let presets = [];
 let dragIndex = null;
 
@@ -15,10 +19,11 @@ function slugify(value) {
     .replace(/^-+|-+$/g, '');
 }
 
-function createInput(value) {
+function createInput(value, placeholder) {
   const input = document.createElement('input');
   input.type = 'text';
   input.value = value || '';
+  if (placeholder) input.placeholder = placeholder;
   return input;
 }
 
@@ -41,6 +46,7 @@ function render() {
     reorder.className = 'reorder';
     const upBtn = document.createElement('button');
     upBtn.textContent = 'Up';
+    upBtn.title = 'Move up in list order (affects activity bar and status bar order)';
     upBtn.disabled = index === 0;
     upBtn.addEventListener('click', () => {
       if (index === 0) return;
@@ -50,6 +56,7 @@ function render() {
     });
     const downBtn = document.createElement('button');
     downBtn.textContent = 'Down';
+    downBtn.title = 'Move down in list order (affects activity bar and status bar order)';
     downBtn.disabled = index === presets.length - 1;
     downBtn.addEventListener('click', () => {
       if (index === presets.length - 1) return;
@@ -101,12 +108,16 @@ function render() {
     const idLabel = document.createElement('div');
     idLabel.className = 'label';
     idLabel.textContent = 'Id';
-    const idInput = createInput(preset.id);
+    idLabel.title = 'Unique identifier for this preset (auto-generated from nickname if blank)';
+    const idInput = createInput(preset.id, 'auto-generated');
+    idInput.title = 'Unique identifier for this preset';
 
     const nameLabel = document.createElement('div');
     nameLabel.className = 'label';
     nameLabel.textContent = 'Nickname';
-    const nameInput = createInput(preset.nickname);
+    nameLabel.title = 'Display name shown in the activity bar and status bar';
+    const nameInput = createInput(preset.nickname, 'My Terminal');
+    nameInput.title = 'Display name shown in the activity bar and status bar';
 
     row1.append(idLabel, idInput, nameLabel, nameInput);
 
@@ -116,16 +127,21 @@ function render() {
     const cmdLabel = document.createElement('div');
     cmdLabel.className = 'label';
     cmdLabel.textContent = 'Command';
-    const cmdInput = createInput(preset.command);
+    cmdLabel.title = 'Shell command to run when the terminal opens';
+    const cmdInput = createInput(preset.command, 'e.g. claude, npm start');
+    cmdInput.title = 'Shell command to run when the terminal opens';
 
     const iconLabel = document.createElement('div');
     iconLabel.className = 'label';
     iconLabel.textContent = 'Icon';
+    iconLabel.title = 'Icon for the terminal tab. Use asset:name, codicon:name, or choose a file';
     const iconWrap = document.createElement('div');
     iconWrap.className = 'inline';
-    const iconInput = createInput(preset.icon);
+    const iconInput = createInput(preset.icon, 'asset:claude or codicon:terminal');
+    iconInput.title = 'Built-in: asset:claude, asset:codex, asset:gemini, codicon:terminal. Or choose a file.';
     const pickBtn = document.createElement('button');
     pickBtn.textContent = 'Choose file';
+    pickBtn.title = 'Select a custom icon file (SVG or PNG)';
     pickBtn.addEventListener('click', () => {
       vscode.postMessage({ type: 'pickIcon', rowId: index });
     });
@@ -139,11 +155,13 @@ function render() {
     const statusLabel = document.createElement('div');
     statusLabel.className = 'label';
     statusLabel.textContent = 'Status bar';
+    statusLabel.title = 'Show a quick-launch button in the bottom status bar';
     const statusWrap = document.createElement('div');
     statusWrap.className = 'inline';
     const statusInput = document.createElement('input');
     statusInput.type = 'checkbox';
     statusInput.checked = preset.showInStatusBar !== false;
+    statusInput.title = 'Show a quick-launch button in the bottom status bar';
     const statusText = document.createElement('span');
     statusText.className = 'small';
     statusText.textContent = 'Show button';
@@ -152,7 +170,9 @@ function render() {
     const colorLabel = document.createElement('div');
     colorLabel.className = 'label';
     colorLabel.textContent = 'Status color';
-    const colorInput = createInput(preset.statusBarColor);
+    colorLabel.title = 'Custom color for the status bar button text';
+    const colorInput = createInput(preset.statusBarColor, '#ff0000 or orange');
+    colorInput.title = 'CSS color for status bar button text (e.g. #ff0000, orange, rgb(255,0,0))';
 
     row3.append(statusLabel, statusWrap, colorLabel, colorInput);
 
@@ -161,13 +181,16 @@ function render() {
 
     const enabledWrap = document.createElement('label');
     enabledWrap.className = 'small';
+    enabledWrap.title = 'When disabled, this preset is hidden from the activity bar and status bar';
     const enabledInput = document.createElement('input');
     enabledInput.type = 'checkbox';
     enabledInput.checked = preset.enabled !== false;
+    enabledInput.title = 'When disabled, this preset is hidden from the activity bar and status bar';
     enabledWrap.append(enabledInput, document.createTextNode(' Enabled'));
 
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remove';
+    removeBtn.title = 'Delete this preset';
     removeBtn.addEventListener('click', () => {
       presets.splice(index, 1);
       render();

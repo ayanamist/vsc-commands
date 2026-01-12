@@ -63,6 +63,10 @@ Example:
 ]
 ```
 
+## Terminal keybindings
+
+When a terminal opened by Commands is focused, the extension can pass Shift+Tab through to the shell (so terminal UIs can use it). Toggle this with `commands.sendShiftTabToTerminal`. If your terminal UI expects a different sequence, set `commands.shiftTabSequence` (common values: `\u001b[Z` or `\u001b[1;2Z`).
+
 ## Theme-aware icons
 
 If you add theme-aware assets, place `name-light.svg` and `name-dark.svg` in `media/` and use `asset:name`.
