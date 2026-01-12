@@ -3,12 +3,18 @@ const vscode = acquireVsCodeApi();
 const list = document.getElementById('list');
 const addBtn = document.getElementById('add');
 const saveBtn = document.getElementById('save');
+const setList = document.getElementById('setList');
+const addSetBtn = document.getElementById('addSet');
+const focusFirstCheckbox = document.getElementById('focusFirst');
 
 // Add tooltips to header buttons
 addBtn.title = 'Add a new terminal preset';
-saveBtn.title = 'Save all presets to settings';
+saveBtn.title = 'Save all presets and command sets to settings';
+addSetBtn.title = 'Add a new command set';
 
 let presets = [];
+let commandSets = [];
+let focusFirst = true;
 let dragIndex = null;
 
 function slugify(value) {
@@ -222,21 +228,255 @@ function readPresetsFromDom() {
   }).filter(p => p.command);
 }
 
+function getPresetNickname(presetId) {
+  const preset = presets.find(p => p.id === presetId);
+  return preset?.nickname || presetId;
+}
+
+function renderSets() {
+  setList.innerHTML = '';
+  commandSets.forEach((set, index) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const header = document.createElement('div');
+    header.className = 'card-header';
+
+    const grip = document.createElement('div');
+    grip.className = 'grip';
+    grip.textContent = '≡';
+    grip.title = 'Drag to reorder';
+
+    const reorder = document.createElement('div');
+    reorder.className = 'reorder';
+    const upBtn = document.createElement('button');
+    upBtn.textContent = 'Up';
+    upBtn.disabled = index === 0;
+    upBtn.addEventListener('click', () => {
+      if (index === 0) return;
+      const item = commandSets.splice(index, 1)[0];
+      commandSets.splice(index - 1, 0, item);
+      renderSets();
+    });
+    const downBtn = document.createElement('button');
+    downBtn.textContent = 'Down';
+    downBtn.disabled = index === commandSets.length - 1;
+    downBtn.addEventListener('click', () => {
+      if (index === commandSets.length - 1) return;
+      const item = commandSets.splice(index, 1)[0];
+      commandSets.splice(index + 1, 0, item);
+      renderSets();
+    });
+    reorder.append(upBtn, downBtn);
+    header.append(grip, reorder);
+
+    // Name row
+    const nameRow = document.createElement('div');
+    nameRow.className = 'row';
+    const nameLabel = document.createElement('div');
+    nameLabel.className = 'label';
+    nameLabel.textContent = 'Name';
+    nameLabel.title = 'Custom name for this set (leave blank to auto-generate)';
+    const nameInput = createInput(set.name || '', 'Auto-generated from presets');
+    nameInput.title = 'Leave blank to auto-generate from selected preset names';
+
+    const autoName = document.createElement('div');
+    autoName.className = 'label';
+    const previewSpan = document.createElement('span');
+    previewSpan.className = 'small';
+    previewSpan.textContent = 'Preview: ' + (set.presetIds || []).map(getPresetNickname).join(' | ');
+    autoName.append(previewSpan);
+
+    nameRow.append(nameLabel, nameInput, autoName, document.createElement('div'));
+
+    // Presets selection
+    const presetsRow = document.createElement('div');
+    presetsRow.className = 'preset-selector';
+
+    const presetsLabel = document.createElement('div');
+    presetsLabel.className = 'label';
+    presetsLabel.textContent = 'Presets';
+    presetsLabel.title = 'Select which presets to launch';
+
+    const selectedList = document.createElement('div');
+    selectedList.className = 'selected-presets';
+
+    // Render selected presets (ordered)
+    const selectedIds = set.presetIds || [];
+    selectedIds.forEach((presetId, pIndex) => {
+      const preset = presets.find(p => p.id === presetId);
+      if (!preset) return;
+
+      const item = document.createElement('div');
+      item.className = 'selected-preset-item';
+
+      const name = document.createElement('span');
+      name.textContent = preset.nickname;
+
+      const controls = document.createElement('div');
+      controls.className = 'preset-controls';
+
+      const moveUp = document.createElement('button');
+      moveUp.textContent = '↑';
+      moveUp.title = 'Move up';
+      moveUp.disabled = pIndex === 0;
+      moveUp.addEventListener('click', () => {
+        if (pIndex === 0) return;
+        selectedIds.splice(pIndex, 1);
+        selectedIds.splice(pIndex - 1, 0, presetId);
+        renderSets();
+      });
+
+      const moveDown = document.createElement('button');
+      moveDown.textContent = '↓';
+      moveDown.title = 'Move down';
+      moveDown.disabled = pIndex === selectedIds.length - 1;
+      moveDown.addEventListener('click', () => {
+        if (pIndex === selectedIds.length - 1) return;
+        selectedIds.splice(pIndex, 1);
+        selectedIds.splice(pIndex + 1, 0, presetId);
+        renderSets();
+      });
+
+      const removePreset = document.createElement('button');
+      removePreset.textContent = '×';
+      removePreset.title = 'Remove from set';
+      removePreset.addEventListener('click', () => {
+        const idx = selectedIds.indexOf(presetId);
+        if (idx >= 0) selectedIds.splice(idx, 1);
+        renderSets();
+      });
+
+      controls.append(moveUp, moveDown, removePreset);
+      item.append(name, controls);
+      selectedList.append(item);
+    });
+
+    // Add preset dropdown
+    const addPresetWrap = document.createElement('div');
+    addPresetWrap.className = 'add-preset-wrap';
+    const addPresetSelect = document.createElement('select');
+    addPresetSelect.title = 'Add a preset to this set';
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '+ Add preset...';
+    addPresetSelect.append(defaultOption);
+
+    presets.filter(p => p.enabled !== false && !selectedIds.includes(p.id)).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nickname;
+      addPresetSelect.append(opt);
+    });
+
+    addPresetSelect.addEventListener('change', () => {
+      if (addPresetSelect.value) {
+        selectedIds.push(addPresetSelect.value);
+        renderSets();
+      }
+    });
+
+    addPresetWrap.append(addPresetSelect);
+    selectedList.append(addPresetWrap);
+
+    presetsRow.append(presetsLabel, selectedList);
+
+    // Status bar row
+    const statusRow = document.createElement('div');
+    statusRow.className = 'row';
+    const statusLabel = document.createElement('div');
+    statusLabel.className = 'label';
+    statusLabel.textContent = 'Status bar';
+    const statusWrap = document.createElement('div');
+    statusWrap.className = 'inline';
+    const statusInput = document.createElement('input');
+    statusInput.type = 'checkbox';
+    statusInput.checked = set.showInStatusBar !== false;
+    statusInput.title = 'Show this command set in the status bar';
+    const statusText = document.createElement('span');
+    statusText.className = 'small';
+    statusText.textContent = 'Show button';
+    statusWrap.append(statusInput, statusText);
+
+    statusRow.append(statusLabel, statusWrap, document.createElement('div'), document.createElement('div'));
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.className = 'footer';
+
+    const enabledWrap = document.createElement('label');
+    enabledWrap.className = 'small';
+    const enabledInput = document.createElement('input');
+    enabledInput.type = 'checkbox';
+    enabledInput.checked = set.enabled !== false;
+    enabledInput.title = 'When disabled, this command set is hidden';
+    enabledWrap.append(enabledInput, document.createTextNode(' Enabled'));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.title = 'Delete this command set';
+    removeBtn.addEventListener('click', () => {
+      commandSets.splice(index, 1);
+      renderSets();
+    });
+
+    footer.append(enabledWrap, removeBtn);
+
+    card.append(header, nameRow, presetsRow, statusRow, footer);
+    card.__inputs = { nameInput, statusInput, enabledInput, presetIds: selectedIds };
+    setList.append(card);
+  });
+}
+
+function readCommandSetsFromDom() {
+  return Array.from(setList.children).map((card, index) => {
+    const { nameInput, statusInput, enabledInput, presetIds } = card.__inputs;
+    const name = nameInput.value.trim();
+    return {
+      id: commandSets[index]?.id || `set-${Date.now()}-${index}`,
+      name,
+      presetIds: [...presetIds],
+      showInStatusBar: statusInput.checked,
+      enabled: enabledInput.checked
+    };
+  }).filter(s => s.presetIds.length > 0);
+}
+
 addBtn.addEventListener('click', () => {
   presets.push({ id: '', nickname: '', command: '', icon: '', enabled: true, showInStatusBar: true });
   render();
 });
 
+addSetBtn.addEventListener('click', () => {
+  commandSets.push({ id: `set-${Date.now()}`, name: '', presetIds: [], showInStatusBar: true, enabled: true });
+  renderSets();
+});
+
 saveBtn.addEventListener('click', () => {
-  const updated = readPresetsFromDom();
-  vscode.postMessage({ type: 'savePresets', presets: updated });
+  const updatedPresets = readPresetsFromDom();
+  const updatedSets = readCommandSetsFromDom();
+  vscode.postMessage({
+    type: 'savePresets',
+    presets: updatedPresets,
+    commandSets: updatedSets,
+    focusFirst: focusFirstCheckbox.checked
+  });
+});
+
+focusFirstCheckbox.addEventListener('change', () => {
+  focusFirst = focusFirstCheckbox.checked;
 });
 
 window.addEventListener('message', event => {
   const msg = event.data;
   if (msg.type === 'presets') {
     presets = msg.presets || [];
+    commandSets = msg.commandSets || [];
+    focusFirst = msg.focusFirst !== false;
+    focusFirstCheckbox.checked = focusFirst;
     render();
+    renderSets();
   }
   if (msg.type === 'pickedIcon') {
     const card = list.children[msg.rowId];

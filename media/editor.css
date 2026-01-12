@@ -198,3 +198,93 @@ input[type="checkbox"] {
   text-decoration: underline;
 }
 
+/* Command Sets Section */
+.command-sets-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--vscode-panel-border, var(--vscode-contrastBorder, #4444));
+}
+
+.command-sets-section h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: var(--vscode-editor-foreground);
+}
+
+.command-sets-section > .muted {
+  margin-bottom: 16px;
+}
+
+.preset-selector {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.preset-selector > .label {
+  min-width: 140px;
+  padding-top: 6px;
+}
+
+.selected-presets {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selected-preset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--vscode-input-background, rgba(128, 128, 128, 0.1));
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.preset-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.preset-controls button {
+  padding: 2px 6px;
+  font-size: 11px;
+  min-width: 24px;
+}
+
+.add-preset-wrap {
+  margin-top: 4px;
+}
+
+.add-preset-wrap select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-input-border, var(--vscode-contrastBorder, #5555));
+  background: var(--vscode-input-background, transparent);
+  color: var(--vscode-input-foreground, var(--vscode-editor-foreground));
+  font-size: 12px;
+  min-width: 150px;
+}
+
+.add-preset-wrap select:focus {
+  outline: 1px solid var(--vscode-focusBorder, #2a7fff);
+  outline-offset: -1px;
+}
+
+.focus-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--vscode-editor-inactiveSelectionBackground, rgba(128, 128, 128, 0.1));
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.focus-setting .muted {
+  margin: 0;
+}
+

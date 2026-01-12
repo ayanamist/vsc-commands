@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.9
+- Added Command Sets feature to launch multiple presets with one click
+- Command Sets appear in the status bar with a list icon
+- Added "Focus first preset" setting to control which terminal gets focus
+- Default command set: Claude | Codex (enabled)
+
 ## 0.0.8
 - Added Cursor, Amp, and OpenCode as built-in presets (disabled in status bar by default)
 - Added Claude Chrome preset (uses `claude --chrome`)

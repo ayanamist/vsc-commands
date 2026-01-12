@@ -41,6 +41,8 @@ const path = __importStar(require("path"));
 const CONFIG_SECTION = 'commands';
 const PRESETS_KEY = 'presets';
 const STATUS_BAR_PRESETS_KEY = 'statusBarPresets';
+const COMMAND_SETS_KEY = 'commandSets';
+const COMMAND_SET_FOCUS_FIRST_KEY = 'commandSetFocusFirst';
 const SHIFT_TAB_SEQUENCE_KEY = 'shiftTabSequence';
 const ASSET_FOLDER = '.commands-assets';
 const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
@@ -113,6 +115,24 @@ function loadPresets() {
 function loadStatusBarPresetIds() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
     return cfg.get(STATUS_BAR_PRESETS_KEY, []);
+}
+function loadCommandSets() {
+    const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return cfg.get(COMMAND_SETS_KEY, []);
+}
+function getCommandSetFocusFirst() {
+    const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return cfg.get(COMMAND_SET_FOCUS_FIRST_KEY, true);
+}
+function getCommandSetDisplayName(set, presets) {
+    if (set.name && set.name.trim()) {
+        return set.name.trim();
+    }
+    // Auto-generate from preset nicknames
+    const names = set.presetIds
+        .map(id => { var _a; return (_a = presets.find(p => p.id === id)) === null || _a === void 0 ? void 0 : _a.nickname; })
+        .filter(Boolean);
+    return names.join(' | ') || 'Unnamed Set';
 }
 function resolveIcon(icon, ctx) {
     if (!icon)
@@ -249,6 +269,7 @@ class PresetProvider {
         this.statusBarItems = [];
         const presets = loadPresets().filter(p => p.enabled !== false);
         const toShow = presets.filter(p => p.showInStatusBar !== false);
+        // Individual preset buttons
         for (const preset of toShow) {
             const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
             const icon = ((_a = preset.icon) === null || _a === void 0 ? void 0 : _a.startsWith('codicon:'))
@@ -268,6 +289,27 @@ class PresetProvider {
             this.statusBarItems.push(item);
             this.ctx.subscriptions.push(item);
         }
+        // Command Set buttons
+        const allPresets = loadPresets();
+        const commandSets = loadCommandSets().filter(s => s.enabled !== false && s.showInStatusBar !== false);
+        for (const set of commandSets) {
+            const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+            const displayName = getCommandSetDisplayName(set, allPresets);
+            item.text = `$(list-unordered) ${displayName}`;
+            const presetNames = set.presetIds
+                .map(id => { var _a; return (_a = allPresets.find(p => p.id === id)) === null || _a === void 0 ? void 0 : _a.nickname; })
+                .filter(Boolean)
+                .join(', ');
+            item.tooltip = `Launch: ${presetNames}`;
+            item.command = {
+                command: 'commands.runCommandSet',
+                title: 'Run Command Set',
+                arguments: [set]
+            };
+            item.show();
+            this.statusBarItems.push(item);
+            this.ctx.subscriptions.push(item);
+        }
     }
 }
 function activate(context) {
@@ -277,6 +319,34 @@ function activate(context) {
         if (!preset)
             return;
         runPreset(preset, context);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.runCommandSet', async (set) => {
+        var _a;
+        if (!set || !((_a = set.presetIds) === null || _a === void 0 ? void 0 : _a.length))
+            return;
+        const allPresets = loadPresets();
+        const focusFirst = getCommandSetFocusFirst();
+        const presetsToRun = set.presetIds
+            .map(id => allPresets.find(p => p.id === id))
+            .filter((p) => p !== undefined && p.enabled !== false);
+        if (presetsToRun.length === 0)
+            return;
+        // Run all presets
+        for (const preset of presetsToRun) {
+            runPreset(preset, context);
+        }
+        // Focus the appropriate terminal (first or last based on setting)
+        // Small delay to ensure terminals are created
+        setTimeout(() => {
+            const terminals = vscode.window.terminals;
+            if (terminals.length > 0) {
+                const targetIndex = focusFirst ? terminals.length - presetsToRun.length : terminals.length - 1;
+                const terminalToFocus = terminals[Math.max(0, targetIndex)];
+                if (terminalToFocus) {
+                    terminalToFocus.show();
+                }
+            }
+        }, 100);
     }));
     context.subscriptions.push(vscode.commands.registerCommand('commands.enableStatusBar', async (item) => {
         const preset = item instanceof PresetItem ? item.preset : item;
@@ -304,7 +374,12 @@ function activate(context) {
         panel.webview.html = getEditorHtml(panel.webview, context.extensionUri);
         panel.webview.onDidReceiveMessage(async (msg) => {
             if ((msg === null || msg === void 0 ? void 0 : msg.type) === 'requestPresets') {
-                panel.webview.postMessage({ type: 'presets', presets: loadPresets() });
+                panel.webview.postMessage({
+                    type: 'presets',
+                    presets: loadPresets(),
+                    commandSets: loadCommandSets(),
+                    focusFirst: getCommandSetFocusFirst()
+                });
             }
             if ((msg === null || msg === void 0 ? void 0 : msg.type) === 'pickIcon') {
                 const picked = await vscode.window.showOpenDialog({
@@ -322,7 +397,17 @@ function activate(context) {
                     const icon = await copyIconIfNeeded(preset.icon, preset.id);
                     updated.push({ ...preset, icon });
                 }
-                await vscode.workspace.getConfiguration(CONFIG_SECTION).update(PRESETS_KEY, updated, vscode.ConfigurationTarget.Global);
+                const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+                await cfg.update(PRESETS_KEY, updated, vscode.ConfigurationTarget.Global);
+                // Save command sets if provided
+                if (msg.commandSets !== undefined) {
+                    const sets = Array.isArray(msg.commandSets) ? msg.commandSets : [];
+                    await cfg.update(COMMAND_SETS_KEY, sets, vscode.ConfigurationTarget.Global);
+                }
+                // Save focus first setting if provided
+                if (msg.focusFirst !== undefined) {
+                    await cfg.update(COMMAND_SET_FOCUS_FIRST_KEY, msg.focusFirst, vscode.ConfigurationTarget.Global);
+                }
                 provider.refresh();
                 panel.webview.postMessage({ type: 'saved' });
             }
@@ -344,6 +429,9 @@ function activate(context) {
             provider.refresh();
         }
         if (e.affectsConfiguration(`${CONFIG_SECTION}.${STATUS_BAR_PRESETS_KEY}`)) {
+            provider.refresh();
+        }
+        if (e.affectsConfiguration(`${CONFIG_SECTION}.${COMMAND_SETS_KEY}`)) {
             provider.refresh();
         }
     }));
@@ -374,6 +462,19 @@ function getEditorHtml(webview, extensionUri) {
     </div>
     <div id="list" class="list"></div>
   </main>
+  <section class="command-sets-section">
+    <h2>Command Sets</h2>
+    <p class="muted">Launch multiple presets with one click from the status bar. Command Sets don't appear in the activity bar.</p>
+    <div class="actions">
+      <button id="addSet">Add Set</button>
+    </div>
+    <div id="setList" class="list"></div>
+    <label class="focus-setting">
+      <input type="checkbox" id="focusFirst" checked />
+      <span>Focus the first preset when launching a set</span>
+      <span class="muted">(uncheck to focus the last preset instead)</span>
+    </label>
+  </section>
   <footer class="cli-links">
     <p><strong>Get the CLIs:</strong></p>
     <ul>
