@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area from status bar buttons.",
   "icon": "media/commands.png",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {
@@ -68,6 +68,17 @@
       {
         "command": "commands.refreshPresets",
         "title": "Commands: Refresh Presets"
+      },
+      {
+        "command": "commands.sendShiftTab",
+        "title": "Commands: Send Shift+Tab"
+      }
+    ],
+    "keybindings": [
+      {
+        "key": "shift+tab",
+        "command": "commands.sendShiftTab",
+        "when": "terminalFocus"
       }
     ],
     "configuration": {
@@ -147,9 +158,19 @@
             "type": "string"
           },
           "default": []
-        }
+        },
+        "commands.shiftTabSequence": {
+          "type": "string",
+          "default": "\u001b[Z",
+          "description": "Escape sequence to send for Shift+Tab in Commands terminals."
+        },
+        "commands.sendShiftTabToTerminal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send Shift+Tab to the focused terminal to avoid workbench focus changes."
       }
-    },
+    }
+  },
     "viewsContainers": {
       "activitybar": [
         {

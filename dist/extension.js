@@ -41,7 +41,71 @@ const path = __importStar(require("path"));
 const CONFIG_SECTION = 'commands';
 const PRESETS_KEY = 'presets';
 const STATUS_BAR_PRESETS_KEY = 'statusBarPresets';
+const SHIFT_TAB_SEQUENCE_KEY = 'shiftTabSequence';
 const ASSET_FOLDER = '.commands-assets';
+const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
+const COMMANDS_TERMINAL_ENV = 'COMMANDS_TERMINAL';
+const managedTerminals = new Set();
+// Track if we've shown the accessibility warning this session
+let accessibilityWarningShown = false;
+function isCommandsTerminal(terminal) {
+    if (!terminal)
+        return false;
+    if (managedTerminals.has(terminal))
+        return true;
+    const creationOptions = terminal.creationOptions;
+    if ('env' in creationOptions) {
+        const env = creationOptions.env;
+        return Boolean(env && env[COMMANDS_TERMINAL_ENV] === '1');
+    }
+    return false;
+}
+async function updateActiveTerminalContext() {
+    const active = vscode.window.activeTerminal;
+    const isCommands = isCommandsTerminal(active);
+    void vscode.commands.executeCommand('setContext', COMMANDS_TERMINAL_CONTEXT, isCommands);
+    // When a Commands terminal gets focus, configure settings to prevent
+    // Shift+Tab from triggering accessibility navigation
+    if (isCommands) {
+        const terminalConfig = vscode.workspace.getConfiguration('terminal.integrated');
+        const editorConfig = vscode.workspace.getConfiguration('editor');
+        // Set terminal tab focus mode to false
+        if (terminalConfig.get('tabFocusMode') !== false) {
+            await terminalConfig.update('tabFocusMode', false, vscode.ConfigurationTarget.Global);
+        }
+        // Set editor tab focus mode to false
+        if (editorConfig.get('tabFocusMode') !== false) {
+            await editorConfig.update('tabFocusMode', false, vscode.ConfigurationTarget.Global);
+        }
+        // Set accessibility support to off for terminal
+        if (terminalConfig.get('accessibilitySupport') !== 'off') {
+            await terminalConfig.update('accessibilitySupport', 'off', vscode.ConfigurationTarget.Global);
+        }
+        // Send keybindings directly to shell instead of letting workbench handle them
+        if (terminalConfig.get('sendKeybindingsToShell') !== true) {
+            await terminalConfig.update('sendKeybindingsToShell', true, vscode.ConfigurationTarget.Global);
+        }
+        // Check if screen reader mode is enabled - it interferes with Shift+Tab
+        if (editorConfig.get('accessibilitySupport') !== 'off' && !accessibilityWarningShown) {
+            accessibilityWarningShown = true;
+            const result = await vscode.window.showWarningMessage('Screen Reader mode may intercept Shift+Tab in terminals. Disable it for better terminal keybinding support?', 'Disable', 'Ignore');
+            if (result === 'Disable') {
+                await editorConfig.update('accessibilitySupport', 'off', vscode.ConfigurationTarget.Global);
+            }
+        }
+    }
+}
+function getShiftTabSequence() {
+    const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
+    return cfg.get(SHIFT_TAB_SEQUENCE_KEY, '\u001b[Z');
+}
+function sendShiftTabSequence() {
+    const active = vscode.window.activeTerminal;
+    if (!active)
+        return;
+    const sequence = getShiftTabSequence();
+    void vscode.commands.executeCommand('workbench.action.terminal.sendSequence', { text: sequence });
+}
 function loadPresets() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
     return cfg.get(PRESETS_KEY, []);
@@ -126,10 +190,13 @@ function runPreset(preset, ctx) {
     const term = vscode.window.createTerminal({
         name: preset.nickname,
         iconPath: resolveIcon(preset.icon, ctx),
-        location: getTerminalLocation()
+        location: getTerminalLocation(),
+        env: { [COMMANDS_TERMINAL_ENV]: '1' }
     });
     term.sendText(preset.command, true);
     term.show(false);
+    managedTerminals.add(term);
+    updateActiveTerminalContext();
 }
 async function setStatusBarFlag(preset, enabled) {
     const presets = loadPresets();
@@ -265,6 +332,13 @@ function activate(context) {
         return vscode.commands.executeCommand('workbench.action.openSettingsJson');
     }));
     context.subscriptions.push(vscode.commands.registerCommand('commands.refreshPresets', () => provider.refresh()));
+    context.subscriptions.push(vscode.commands.registerCommand('commands.sendShiftTab', () => sendShiftTabSequence()));
+    context.subscriptions.push(vscode.window.onDidChangeActiveTerminal(() => updateActiveTerminalContext()));
+    context.subscriptions.push(vscode.window.onDidCloseTerminal(term => {
+        if (managedTerminals.delete(term)) {
+            updateActiveTerminalContext();
+        }
+    }));
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration(`${CONFIG_SECTION}.${PRESETS_KEY}`)) {
             provider.refresh();
@@ -274,6 +348,7 @@ function activate(context) {
         }
     }));
     provider.refreshStatusBar();
+    updateActiveTerminalContext();
 }
 function deactivate() { }
 function getEditorHtml(webview, extensionUri) {
