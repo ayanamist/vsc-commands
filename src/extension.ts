@@ -431,6 +431,21 @@ function getEditorHtml(webview: vscode.Webview, extensionUri: vscode.Uri): strin
     </div>
     <div id="list" class="list"></div>
   </main>
+  <footer class="cli-links">
+    <p><strong>Get the CLIs:</strong></p>
+    <ul>
+      <li><a href="https://docs.anthropic.com/en/docs/claude-code/overview">Claude Code</a></li>
+      <li><a href="https://developers.openai.com/codex/cli/">OpenAI Codex</a></li>
+      <li><a href="https://geminicli.com">Google Gemini</a></li>
+      <li><a href="https://cursor.com/docs/cli/installation">Cursor Agent</a></li>
+      <li><a href="https://ampcode.com/manual#getting-started-command-line-interface">Amp</a></li>
+      <li><a href="https://opencode.ai">OpenCode</a></li>
+    </ul>
+    <p><strong>Get browser extensions:</strong></p>
+    <ul>
+      <li><a href="https://code.claude.com/docs/en/chrome">Claude for Chrome</a></li>
+    </ul>
+  </footer>
   <script src="${scriptUri}"></script>
 </body>
 </html>`;

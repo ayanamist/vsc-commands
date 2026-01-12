@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.8
+- Added Cursor, Amp, and OpenCode as built-in presets (disabled in status bar by default)
+- Added Claude Chrome preset (uses `claude --chrome`)
+- Added CLI download links footer in preset editor
+- Added theme-aware icons for Cursor, Amp, and OpenCode
+
 ## 0.0.7
 - Renamed "Status color" to "Button text color" for clarity
 - Fixed "Choose file" button wrapping in icon field
