@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.11
+- Added GitHub Copilot CLI preset and icons (hidden from status bar by default)
+
 ## 0.0.9
 - Added Command Sets feature to launch multiple presets with one click
 - Command Sets appear in the status bar with a list icon

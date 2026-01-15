@@ -7,7 +7,7 @@ Commands is a VS Code extension that opens terminals in the editor area with com
 - Launches terminals in the editor area and runs preset commands immediately
 - Shows quick-launch buttons in the status bar for your most-used commands
 - Supports **Command Sets** to open multiple terminals with one click
-- Ships with presets for popular coding CLIs: Claude, Codex, Gemini, Claude Chrome, Cursor, Amp, and OpenCode
+- Ships with presets for popular coding CLIs: Claude, Codex, Gemini, Claude Chrome, Cursor, Amp, OpenCode, and Copilot
 - Lets you customize everything: presets, icons, status bar visibility, and button colors
 
 ## Default Setup
@@ -22,7 +22,7 @@ Out of the box, Commands shows these buttons in your status bar:
 - **Claude Chrome** - launches Claude with Chrome browser integration
 - **Claude | Codex** - a Command Set that opens both Claude and Codex terminals side by side
 
-Additional presets for Cursor, Amp, and OpenCode are included but hidden from the status bar by default. You can enable them in the preset editor.
+Additional presets for Cursor, Amp, OpenCode, and Copilot are included but hidden from the status bar by default. You can enable them in the preset editor.
 
 ## Where to find it
 

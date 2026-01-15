@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area from status bar buttons.",
   "icon": "media/commands.png",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {
@@ -182,6 +182,14 @@
               "nickname": "OpenCode",
               "command": "opencode",
               "icon": "asset:opencode",
+              "showInStatusBar": false,
+              "enabled": true
+            },
+            {
+              "id": "copilot",
+              "nickname": "Copilot",
+              "command": "copilot",
+              "icon": "asset:copilot",
               "showInStatusBar": false,
               "enabled": true
             }

@@ -47,6 +47,82 @@ const SHIFT_TAB_SEQUENCE_KEY = 'shiftTabSequence';
 const ASSET_FOLDER = '.commands-assets';
 const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
 const COMMANDS_TERMINAL_ENV = 'COMMANDS_TERMINAL';
+// Default presets - used when configuration is empty (e.g., in Cursor which may not apply package.json defaults)
+const DEFAULT_PRESETS = [
+    {
+        id: 'claude',
+        nickname: 'Claude',
+        command: 'claude',
+        icon: 'asset:claude',
+        showInStatusBar: true,
+        enabled: true
+    },
+    {
+        id: 'codex',
+        nickname: 'Codex',
+        command: 'codex',
+        icon: 'asset:codex',
+        showInStatusBar: true,
+        enabled: true
+    },
+    {
+        id: 'gemini',
+        nickname: 'Gemini',
+        command: 'gemini',
+        icon: 'asset:gemini',
+        showInStatusBar: true,
+        enabled: true
+    },
+    {
+        id: 'claude-chrome',
+        nickname: 'Claude Chrome',
+        command: 'claude --chrome',
+        icon: 'asset:claude',
+        showInStatusBar: true,
+        enabled: true
+    },
+    {
+        id: 'cursor',
+        nickname: 'Cursor',
+        command: 'agent',
+        icon: 'asset:cursor',
+        showInStatusBar: false,
+        enabled: true
+    },
+    {
+        id: 'amp',
+        nickname: 'Amp',
+        command: 'amp',
+        icon: 'asset:amp',
+        showInStatusBar: false,
+        enabled: true
+    },
+    {
+        id: 'opencode',
+        nickname: 'OpenCode',
+        command: 'opencode',
+        icon: 'asset:opencode',
+        showInStatusBar: false,
+        enabled: true
+    },
+    {
+        id: 'copilot',
+        nickname: 'Copilot',
+        command: 'copilot',
+        icon: 'asset:copilot',
+        showInStatusBar: false,
+        enabled: true
+    }
+];
+const DEFAULT_COMMAND_SETS = [
+    {
+        id: 'claude-codex',
+        name: '',
+        presetIds: ['claude', 'codex'],
+        showInStatusBar: true,
+        enabled: true
+    }
+];
 const managedTerminals = new Set();
 // Track if we've shown the accessibility warning this session
 let accessibilityWarningShown = false;
@@ -110,7 +186,9 @@ function sendShiftTabSequence() {
 }
 function loadPresets() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    return cfg.get(PRESETS_KEY, []);
+    const presets = cfg.get(PRESETS_KEY, []);
+    // Return defaults if config is empty (handles Cursor/forks that don't apply package.json defaults)
+    return presets.length > 0 ? presets : DEFAULT_PRESETS;
 }
 function loadStatusBarPresetIds() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -118,7 +196,9 @@ function loadStatusBarPresetIds() {
 }
 function loadCommandSets() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
-    return cfg.get(COMMAND_SETS_KEY, []);
+    const sets = cfg.get(COMMAND_SETS_KEY, []);
+    // Return defaults if config is empty (handles Cursor/forks that don't apply package.json defaults)
+    return sets.length > 0 ? sets : DEFAULT_COMMAND_SETS;
 }
 function getCommandSetFocusFirst() {
     const cfg = vscode.workspace.getConfiguration(CONFIG_SECTION);
@@ -495,6 +575,7 @@ function getEditorHtml(webview, extensionUri) {
       <li><a href="https://cursor.com/docs/cli/installation">Cursor Agent</a></li>
       <li><a href="https://ampcode.com/manual#getting-started-command-line-interface">Amp</a></li>
       <li><a href="https://opencode.ai">OpenCode</a></li>
+      <li><a href="https://docs.github.com/en/copilot/how-tos/set-up/install-copilot-cli">GitHub Copilot CLI</a></li>
     </ul>
     <p><strong>Get browser extensions:</strong></p>
     <ul>
