@@ -128,6 +128,8 @@ Until VS Code exposes reliable terminal metadata restoration or mutable terminal
 
 To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `media/icons/` and reference them with `asset:name`.
 
+Built-in `asset:name` icons also appear in the status bar as single-color, theme-aware product icons. VS Code status bar items do not support arbitrary image URIs, so custom `file:` icons use the generic terminal icon there while retaining the selected image in the Commands view and terminal tab.
+
 ## License
 
 MIT

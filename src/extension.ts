@@ -30,6 +30,16 @@ const ASSET_FOLDER = '.commands-assets';
 const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
 const COMMANDS_TERMINAL_ENV = 'COMMANDS_TERMINAL';
 
+const STATUS_BAR_ASSET_ICONS: Readonly<Record<string, string>> = {
+  amp: 'commands-amp',
+  claude: 'commands-claude',
+  codex: 'commands-codex',
+  copilot: 'commands-copilot',
+  cursor: 'commands-cursor',
+  gemini: 'commands-gemini',
+  opencode: 'commands-opencode'
+};
+
 // Default presets - used when configuration is empty (e.g., in Cursor which may not apply package.json defaults)
 const DEFAULT_PRESETS: Preset[] = [
   {
@@ -251,6 +261,28 @@ function resolveIcon(
   return vscode.Uri.parse(trimmed);
 }
 
+function resolveStatusBarIcon(icon: string | undefined): string {
+  const trimmed = icon?.trim();
+  if (!trimmed) return '$(terminal)';
+
+  if (trimmed.startsWith('codicon:')) {
+    const name = trimmed.slice('codicon:'.length).trim();
+    return name ? `$(${name})` : '$(terminal)';
+  }
+
+  if (trimmed.startsWith('asset:')) {
+    const name = trimmed.slice('asset:'.length).replace(/\.svg$/, '');
+    const contributedIcon = STATUS_BAR_ASSET_ICONS[name];
+    if (contributedIcon) {
+      return `$(${contributedIcon})`;
+    }
+  }
+
+  // StatusBarItem only supports theme icons in its text. Arbitrary image
+  // URIs and unregistered assets therefore keep the generic fallback.
+  return '$(terminal)';
+}
+
 function getWorkspaceRoot(): vscode.Uri | undefined {
   return vscode.workspace.workspaceFolders?.[0]?.uri;
 }
@@ -375,9 +407,7 @@ class PresetProvider implements vscode.TreeDataProvider<PresetItem> {
     // Individual preset buttons
     for (const preset of toShow) {
       const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-      const icon = preset.icon?.startsWith('codicon:')
-        ? preset.icon.replace('codicon:', '$(') + ')'
-        : '$(terminal)';
+      const icon = resolveStatusBarIcon(preset.icon);
       item.text = `${icon} ${preset.nickname}`;
       item.tooltip = `${preset.command}`;
       if (preset.statusBarColor) {

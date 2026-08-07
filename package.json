@@ -39,6 +39,57 @@
     "README.md"
   ],
   "contributes": {
+    "icons": {
+      "commands-amp": {
+        "description": "Amp CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F107"
+        }
+      },
+      "commands-claude": {
+        "description": "Claude CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F106"
+        }
+      },
+      "commands-codex": {
+        "description": "Codex CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F105"
+        }
+      },
+      "commands-copilot": {
+        "description": "GitHub Copilot CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F104"
+        }
+      },
+      "commands-cursor": {
+        "description": "Cursor CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F103"
+        }
+      },
+      "commands-gemini": {
+        "description": "Gemini CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F102"
+        }
+      },
+      "commands-opencode": {
+        "description": "OpenCode CLI",
+        "default": {
+          "fontPath": "media/icons/commands-statusbar-icons.woff",
+          "fontCharacter": "\\F101"
+        }
+      }
+    },
     "commands": [
       {
         "command": "commands.runPreset",

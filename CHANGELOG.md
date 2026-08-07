@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.0.12
+- Show each built-in preset's configured tool icon in the status bar instead of the generic terminal icon
+
 ## 0.0.11
 - Added GitHub Copilot CLI preset and icons (hidden from status bar by default)
 
