@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area from status bar buttons.",
   "icon": "media/icons/commands.png",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "publisher": "GenerousCorp",
   "license": "MIT",
   "repository": {
@@ -176,7 +176,11 @@
                 "description": "Optional status bar text color (CSS color or theme color id)."
               }
             },
-            "required": ["id", "nickname", "command"]
+            "required": [
+              "id",
+              "nickname",
+              "command"
+            ]
           },
           "default": [
             {
@@ -279,7 +283,9 @@
               },
               "presetIds": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Ordered list of preset IDs to launch."
               },
               "showInStatusBar": {
@@ -293,13 +299,19 @@
                 "description": "Whether this command set is active."
               }
             },
-            "required": ["id", "presetIds"]
+            "required": [
+              "id",
+              "presetIds"
+            ]
           },
           "default": [
             {
               "id": "claude-codex",
               "name": "",
-              "presetIds": ["claude", "codex"],
+              "presetIds": [
+                "claude",
+                "codex"
+              ],
               "showInStatusBar": true,
               "enabled": true
             }
@@ -360,12 +372,17 @@
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
     "copy:webview": "node -e \"require('fs').cpSync('src/webview', 'dist/webview', { recursive: true })\"",
+    "build:icon-font": "node scripts/build-icon-font.mjs",
     "compile": "npm run clean && tsc --project tsconfig.json && npm run copy:webview",
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@types/vscode": "1.95.0",
+    "fast-xml-parser": "^5.10.1",
+    "svg2ttf": "^6.1.0",
+    "svgpath": "^2.6.0",
+    "ttf2woff": "^3.0.0",
     "typescript": "^5.5.4"
   }
 }

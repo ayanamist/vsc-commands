@@ -130,6 +130,8 @@ To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `
 
 Built-in `asset:name` icons also appear in the status bar as single-color, theme-aware product icons. VS Code status bar items do not support arbitrary image URIs, so custom `file:` icons use the generic terminal icon there while retaining the selected image in the Commands view and terminal tab.
 
+The status bar variants come from `media/icons/commands-statusbar-icons.woff`, which is built from the `-dark.svg` sources by `npm run build:icon-font`. Run it after editing any of those SVGs and commit the regenerated font. The build prints how much of each glyph's em square is inked; a value near 100% means a background rectangle, clip path, or mask leaked into the outline and the icon will render as a solid block.
+
 ## License
 
 MIT

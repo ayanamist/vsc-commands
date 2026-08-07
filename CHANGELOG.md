@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.13
+- Fixed the Codex status bar icon rendering as a solid block, caused by clip paths leaking into the icon font
+- Status bar icons now share a uniform width so they line up with built-in icons
+- Added `npm run build:icon-font` to regenerate the icon font from the source SVGs
+
 ## 0.0.12
 - Show each built-in preset's configured tool icon in the status bar instead of the generic terminal icon
 
