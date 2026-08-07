@@ -1,0 +1,66 @@
+name: Release latest VSIX
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-latest
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VSIX_PATH: commands-open-terminal-in-editor-latest.vsix
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build VSIX
+        run: npx --yes @vscode/vsce@3.9.2 package --out "$VSIX_PATH"
+
+      - name: Move latest tag
+        run: |
+          git tag --force latest "$GITHUB_SHA"
+          git push origin refs/tags/latest --force
+
+      - name: Create or update latest release
+        run: |
+          release_notes="Automated build from commit ${GITHUB_SHA}."
+
+          if gh release view latest --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit latest \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Latest Build" \
+              --notes "$release_notes" \
+              --latest
+            gh release upload latest "$VSIX_PATH" \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create latest "$VSIX_PATH" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Latest Build" \
+              --notes "$release_notes" \
+              --latest \
+              --verify-tag
+          fi
