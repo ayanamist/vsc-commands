@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - src/**
+      - media/icons/**
+      - package.json
+      - package-lock.json
+      - tsconfig.json
+      - .github/workflows/release-latest.yml
   workflow_dispatch:
 
 permissions:
