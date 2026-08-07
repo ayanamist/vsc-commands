@@ -107,6 +107,23 @@ Additional settings:
 
 When a terminal opened by Commands is focused, the extension passes Shift+Tab through to the shell so terminal UIs (like Claude Code's mode switcher) can use it. Toggle this with `commands.sendShiftTabToTerminal`.
 
+## Known Limitation: Pinned Terminal Restoration
+
+Investigated on 2026-08-07. A terminal created by this extension receives its nickname and icon through `createTerminal({ name, iconPath })`, then the preset command is launched separately with `Terminal.sendText()`.
+
+After a full VS Code restart, a pinned terminal editor can be revived as a plain shell tab with the preset title and icon missing. Not replaying the preset command is expected because `sendText()` input is not part of the terminal launch configuration. Losing the API-provided title and icon appears to be a VS Code terminal persistence defect: the current VS Code revival implementation explicitly attempts to restore the persisted [API title and icon](https://github.com/microsoft/vscode/blob/3c9d7f23bdc7399e1ce6bc3ef9f1de47b62539fe/src/vs/platform/terminal/node/ptyService.ts#L284-L291), and related upstream issues remain open for [terminal titles](https://github.com/microsoft/vscode/issues/287059) and [stable terminal identity across reloads](https://github.com/microsoft/vscode/issues/327326).
+
+The stable extension API does not allow changing an existing terminal tab's title or icon in place: `Terminal.name`, `Terminal.creationOptions`, and editor `Tab` metadata are read-only, and there is no terminal icon setter. This rules out a clean metadata-only repair after restart.
+
+Previously considered workarounds and their tradeoffs:
+
+- Recreating the terminal during extension activation restores its title and icon, but eagerly launches the terminal and breaks VS Code's lazy tab restoration.
+- Waiting until activation to recreate it preserves lazy loading, but the inactive tab displays the fallback shell title and icon until selected.
+- A serialized Webview placeholder can own persistent title/icon metadata, but VS Code provides no way to embed a native integrated terminal inside it. Swapping between Webview and terminal changes the editor tab identity and complicates pinning, ordering, and shutdown.
+- Replacing the terminal with a placeholder during extension shutdown is not reliable; extensions do not have a dependable asynchronous shutdown phase for editor-layout mutations.
+
+Until VS Code exposes reliable terminal metadata restoration or mutable terminal-tab metadata, keep the native terminal implementation and manually close and relaunch an affected preset after restart. Re-test this limitation against stock VS Code before adding another workaround, since editor forks may behave differently.
+
 ## Theme-aware Icons
 
 To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `media/icons/` and reference them with `asset:name`.
