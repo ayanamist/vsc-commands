@@ -28,17 +28,16 @@
     "editor"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onView:commands.presets",
-    "onCommand:commands.runPreset",
-    "onCommand:commands.pickPreset",
-    "onCommand:commands.openEditor",
-    "onCommand:commands.enableStatusBar",
-    "onCommand:commands.disableStatusBar",
-    "onCommand:commands.openSettingsJson",
-    "onCommand:commands.refreshPresets"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "files": [
+    "dist",
+    "media/icons",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
   "contributes": {
     "commands": [
       {
@@ -308,12 +307,14 @@
     ]
   },
   "scripts": {
-    "compile": "tsc -p ./ && node -e \"const fs = require('fs'); fs.rmSync('dist/webview', { recursive: true, force: true }); fs.cpSync('src/webview', 'dist/webview', { recursive: true })\"",
+    "clean": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\"",
+    "copy:webview": "node -e \"require('fs').cpSync('src/webview', 'dist/webview', { recursive: true })\"",
+    "compile": "npm run clean && tsc --project tsconfig.json && npm run copy:webview",
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",
-    "@types/vscode": "^1.95.0",
+    "@types/vscode": "1.95.0",
     "typescript": "^5.5.4"
   }
 }
