@@ -235,13 +235,13 @@ function resolveIcon(
   if (trimmed.startsWith('asset:')) {
     const name = trimmed.slice('asset:'.length);
     const baseName = name.endsWith('.svg') ? name.replace(/\.svg$/, '') : name;
-    const lightUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', `${baseName}-light.svg`);
-    const darkUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', `${baseName}-dark.svg`);
+    const lightUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', 'icons', `${baseName}-light.svg`);
+    const darkUri = vscode.Uri.joinPath(ctx.extensionUri, 'media', 'icons', `${baseName}-dark.svg`);
     if (existsSync(lightUri.fsPath) && existsSync(darkUri.fsPath)) {
       return { light: lightUri, dark: darkUri };
     }
     const fileName = `${baseName}.svg`;
-    return vscode.Uri.joinPath(ctx.extensionUri, 'media', fileName);
+    return vscode.Uri.joinPath(ctx.extensionUri, 'media', 'icons', fileName);
   }
 
   if (trimmed.startsWith('file:') || trimmed.startsWith('http:') || trimmed.startsWith('https:')) {
@@ -598,8 +598,8 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 function getEditorHtml(webview: vscode.Webview, extensionUri: vscode.Uri): string {
-  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.css'));
-  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'editor.js'));
+  const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', 'editor.css'));
+  const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', 'editor.js'));
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

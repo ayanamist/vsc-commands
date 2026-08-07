@@ -109,7 +109,7 @@ When a terminal opened by Commands is focused, the extension passes Shift+Tab th
 
 ## Theme-aware Icons
 
-To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `media/` and reference them with `asset:name`.
+To add theme-aware custom icons, place `name-light.svg` and `name-dark.svg` in `media/icons/` and reference them with `asset:name`.
 
 ## License
 

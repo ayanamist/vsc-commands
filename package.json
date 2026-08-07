@@ -2,7 +2,7 @@
   "name": "commands-open-terminal-in-editor",
   "displayName": "Commands: Open Terminal in Editor",
   "description": "Launch terminal presets in the editor area from status bar buttons.",
-  "icon": "media/commands.png",
+  "icon": "media/icons/commands.png",
   "version": "0.0.12",
   "publisher": "GenerousCorp",
   "license": "MIT",
@@ -91,7 +91,7 @@
         "commands.presets": {
           "type": "array",
           "description": "Terminal presets shown in the Commands view.",
-          "markdownDescription": "Terminal presets shown in the Commands view.\n\nExample:\n```json\n\"commands.presets\": [\n  {\n    \"id\": \"claude\",\n    \"nickname\": \"Claude\",\n    \"command\": \"claude\",\n    \"icon\": \"asset:claude\",\n    \"enabled\": true\n  }\n]\n```\n\nIcon formats: `asset:name`, `codicon:terminal`, or `file:/absolute/path/icon.svg`. The editor can copy local files into a workspace asset folder and update the icon automatically. Theme-aware assets can be provided as `name-light.svg` and `name-dark.svg` under `media/`.",
+          "markdownDescription": "Terminal presets shown in the Commands view.\n\nExample:\n```json\n\"commands.presets\": [\n  {\n    \"id\": \"claude\",\n    \"nickname\": \"Claude\",\n    \"command\": \"claude\",\n    \"icon\": \"asset:claude\",\n    \"enabled\": true\n  }\n]\n```\n\nIcon formats: `asset:name`, `codicon:terminal`, or `file:/absolute/path/icon.svg`. The editor can copy local files into a workspace asset folder and update the icon automatically. Theme-aware assets can be provided as `name-light.svg` and `name-dark.svg` under `media/icons/`.",
           "items": {
             "type": "object",
             "properties": {
@@ -267,7 +267,7 @@
         {
           "id": "commands",
           "title": "Commands",
-          "icon": "media/commands.svg"
+          "icon": "media/icons/commands.svg"
         }
       ]
     },
@@ -308,7 +308,7 @@
     ]
   },
   "scripts": {
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && node -e \"const fs = require('fs'); fs.rmSync('dist/webview', { recursive: true, force: true }); fs.cpSync('src/webview', 'dist/webview', { recursive: true })\"",
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
