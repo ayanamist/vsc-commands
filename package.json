@@ -1,19 +1,22 @@
 {
-  "name": "commands-open-terminal-in-editor",
-  "displayName": "Commands: Open Terminal in Editor",
-  "description": "Launch terminal presets in the editor area from status bar buttons.",
-  "icon": "media/icons/commands.png",
-  "version": "0.0.13",
-  "publisher": "GenerousCorp",
+  "name": "commands-open-terminal-in-editor-2",
+  "displayName": "Commands: Open Terminal in Editor 2",
+  "description": "Launch terminal presets in the editor area while preserving settings from the original Commands extension.",
+  "icon": "media/icons/commands-2.png",
+  "version": "0.1.0",
+  "publisher": "ayanamist",
+  "author": {
+    "name": "ayanamist"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/danielraffel/Commands"
+    "url": "https://github.com/ayanamist/vsc-commands.git"
   },
   "bugs": {
-    "url": "https://github.com/danielraffel/Commands/issues"
+    "url": "https://github.com/ayanamist/vsc-commands/issues"
   },
-  "homepage": "https://www.generouscorp.com/Commands/index.html",
+  "homepage": "https://github.com/ayanamist/vsc-commands#readme",
   "engines": {
     "vscode": "^1.95.0"
   },

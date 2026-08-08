@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      VSIX_PATH: commands-open-terminal-in-editor-latest.vsix
+      VSIX_PATH: commands-open-terminal-in-editor-2-latest.vsix
 
     steps:
       - name: Check out repository

@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.0
+- First release of Commands 2 under the ayanamist publisher
+- Add a distinct Commands 2 Marketplace icon
+- Preserve the original `commands.*` settings and prevent activation while the original extension is enabled
 - Wait for newly created terminals to become ready before running preset commands, with a process-start fallback for shells without shell integration
 
 ## 0.0.13

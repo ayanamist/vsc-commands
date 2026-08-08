@@ -1,6 +1,14 @@
-# Commands
+# Commands 2
 
-Commands is a VS Code extension that opens terminals in the editor area with commands of your choice. This makes your terminal a first-class citizen next to your files, not tucked away in the panel or sidebar.
+Commands 2 is an independently maintained fork of [Daniel Raffel's Commands](https://github.com/danielraffel/Commands). It opens terminals in the editor area with commands of your choice, making your terminal a first-class citizen next to your files instead of tucking it away in the panel or sidebar.
+
+## Compatibility with the original extension
+
+Commands 2 deliberately keeps the original `commands.*` configuration keys so existing user and workspace settings continue to work without migration.
+
+Do not enable Commands 2 and `GenerousCorp.commands-open-terminal-in-editor` at the same time. They share command, view, and configuration identifiers. If Commands 2 detects that the original extension is enabled, it stops activation and asks you to disable or uninstall one of them.
+
+Commands 2 is maintained by ayanamist and is not affiliated with GenerousCorp or the vendors of the bundled CLI presets.
 
 ## What it does
 

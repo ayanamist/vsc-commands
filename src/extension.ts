@@ -29,6 +29,7 @@ const SHIFT_TAB_SEQUENCE_KEY = 'shiftTabSequence';
 const ASSET_FOLDER = '.commands-assets';
 const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
 const COMMANDS_TERMINAL_ENV = 'COMMANDS_TERMINAL';
+const UPSTREAM_EXTENSION_ID = 'GenerousCorp.commands-open-terminal-in-editor';
 const SHELL_INTEGRATION_TIMEOUT_MS = 3000;
 
 const STATUS_BAR_ASSET_ICONS: Readonly<Record<string, string>> = {
@@ -507,6 +508,13 @@ class PresetProvider implements vscode.TreeDataProvider<PresetItem> {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  if (vscode.extensions.getExtension(UPSTREAM_EXTENSION_ID)) {
+    void vscode.window.showErrorMessage(
+      'Commands 2 cannot run while the original Commands extension is enabled. Disable or uninstall one of them, then restart the extension host.'
+    );
+    return;
+  }
+
   const provider = new PresetProvider(context);
 
   context.subscriptions.push(
