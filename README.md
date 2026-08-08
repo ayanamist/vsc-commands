@@ -28,6 +28,10 @@ Additional presets for Cursor, Amp, OpenCode, and Copilot are included but hidde
 
 Open the **activity bar** (the vertical strip of icons on the far left edge of the window). You'll see a Commands icon there. Click it to access your presets.
 
+Commands runs as a local UI extension. In Remote SSH, WSL, Dev Containers, and
+similar desktop remote windows, install it locally only; terminals created through
+the VS Code API still run in the active remote environment.
+
 ![Commands activity bar view](media/screenshots/activity-bar.png)
 
 Clicking any preset opens a terminal in the editor area:

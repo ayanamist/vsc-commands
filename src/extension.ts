@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { promises as fs, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import * as path from 'path';
 
 type Preset = {
@@ -293,30 +293,34 @@ function getAssetFolderUri(): vscode.Uri | undefined {
   return vscode.Uri.joinPath(root, ASSET_FOLDER);
 }
 
-function isLocalFileIcon(icon: string): boolean {
-  if (icon.startsWith('file:')) return true;
-  return path.isAbsolute(icon);
+function getCopyableIconUri(icon: string): vscode.Uri | undefined {
+  if (path.isAbsolute(icon)) {
+    return vscode.Uri.file(icon);
+  }
+
+  const uri = vscode.Uri.parse(icon);
+  if (uri.scheme === 'file' || uri.scheme === 'vscode-remote') {
+    return uri;
+  }
 }
 
 async function copyIconIfNeeded(icon: string | undefined, presetId: string): Promise<string | undefined> {
   if (!icon) return;
-  if (!isLocalFileIcon(icon)) return icon;
+  const srcUri = getCopyableIconUri(icon);
+  if (!srcUri) return icon;
 
   const assetRoot = getAssetFolderUri();
   if (!assetRoot) return icon;
 
-  const srcPath = icon.startsWith('file:')
-    ? vscode.Uri.parse(icon).fsPath
-    : icon;
-
-  const ext = path.extname(srcPath) || '.svg';
+  const ext = path.extname(srcUri.path) || '.svg';
   const safeBase = presetId.replace(/[^a-zA-Z0-9_-]/g, '_') || 'preset';
   const destName = `${safeBase}-${Date.now()}${ext}`;
   const destUri = vscode.Uri.joinPath(assetRoot, destName);
 
   try {
-    await fs.mkdir(assetRoot.fsPath, { recursive: true });
-    await fs.copyFile(srcPath, destUri.fsPath);
+    await vscode.workspace.fs.createDirectory(assetRoot);
+    const contents = await vscode.workspace.fs.readFile(srcUri);
+    await vscode.workspace.fs.writeFile(destUri, contents);
     return destUri.toString();
   } catch {
     return icon;
@@ -550,7 +554,7 @@ export function activate(context: vscode.ExtensionContext) {
             filters: { 'Images': ['svg', 'png'] }
           });
           if (!picked?.length) return;
-          panel.webview.postMessage({ type: 'pickedIcon', rowId: msg.rowId, path: picked[0].fsPath });
+          panel.webview.postMessage({ type: 'pickedIcon', rowId: msg.rowId, path: picked[0].toString() });
         }
 
         if (msg?.type === 'savePresets') {

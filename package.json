@@ -31,6 +31,9 @@
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
+  "extensionKind": [
+    "ui"
+  ],
   "files": [
     "dist",
     "media/icons",
