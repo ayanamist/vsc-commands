@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Wait for newly created terminals to become ready before running preset commands, with a process-start fallback for shells without shell integration
+
 ## 0.0.13
 - Fixed the Codex status bar icon rendering as a solid block, caused by clip paths leaking into the icon font
 - Status bar icons now share a uniform width so they line up with built-in icons
