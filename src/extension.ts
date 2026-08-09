@@ -465,7 +465,11 @@ class PresetProvider implements vscode.TreeDataProvider<PresetItem> {
 
     // Individual preset buttons
     for (const preset of toShow) {
-      const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+      const item = vscode.window.createStatusBarItem(
+        `preset.${preset.id}`,
+        vscode.StatusBarAlignment.Left,
+        100
+      );
       const icon = resolveStatusBarIcon(preset.icon);
       item.text = `${icon} ${preset.nickname}`;
       item.tooltip = `${preset.command}`;
@@ -487,7 +491,11 @@ class PresetProvider implements vscode.TreeDataProvider<PresetItem> {
     const commandSets = loadCommandSets().filter(s => s.enabled !== false && s.showInStatusBar !== false);
 
     for (const set of commandSets) {
-      const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+      const item = vscode.window.createStatusBarItem(
+        `commandSet.${set.id}`,
+        vscode.StatusBarAlignment.Left,
+        99
+      );
       const displayName = getCommandSetDisplayName(set, allPresets);
       item.text = `$(list-unordered) ${displayName}`;
       const presetNames = set.presetIds
