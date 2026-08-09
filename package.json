@@ -3,7 +3,7 @@
   "displayName": "Commands: Open Terminal in Editor 2",
   "description": "Launch terminal presets in the editor area while preserving settings from the original Commands extension.",
   "icon": "media/icons/commands-2.png",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "ayanamist",
   "author": {
     "name": "ayanamist"

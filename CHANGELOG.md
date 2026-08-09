@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+- Run Commands 2 from the local UI extension host in Remote SSH, WSL, and Dev Container windows
+- Preserve custom icon copying across local and remote file systems
+- Use stable status bar item IDs so preset buttons are not lost to collisions between local and remote extension hosts
+
 ## 0.1.0
 - First release of Commands 2 under the ayanamist publisher
 - Add a distinct Commands 2 Marketplace icon
