@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.2
+- Run preset commands as soon as the terminal process starts instead of always waiting three seconds when shell integration is unavailable
+
 ## 0.1.1
 - Run Commands 2 from the local UI extension host in Remote SSH, WSL, and Dev Container windows
 - Preserve custom icon copying across local and remote file systems

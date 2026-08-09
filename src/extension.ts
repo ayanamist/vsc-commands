@@ -30,7 +30,6 @@ const ASSET_FOLDER = '.commands-assets';
 const COMMANDS_TERMINAL_CONTEXT = 'commands.commandsTerminalFocus';
 const COMMANDS_TERMINAL_ENV = 'COMMANDS_TERMINAL';
 const UPSTREAM_EXTENSION_ID = 'GenerousCorp.commands-open-terminal-in-editor';
-const SHELL_INTEGRATION_TIMEOUT_MS = 3000;
 
 const STATUS_BAR_ASSET_ICONS: Readonly<Record<string, string>> = {
   amp: 'commands-amp',
@@ -340,12 +339,10 @@ function getTerminalLocation(): vscode.TerminalLocation | { viewColumn: vscode.V
 
 function runWhenTerminalReady(term: vscode.Terminal, command: string) {
   let sent = false;
-  let timeout: NodeJS.Timeout | undefined;
   let shellIntegrationListener: vscode.Disposable | undefined;
   let closeListener: vscode.Disposable | undefined;
 
   const cleanup = () => {
-    if (timeout) clearTimeout(timeout);
     shellIntegrationListener?.dispose();
     closeListener?.dispose();
   };
@@ -375,20 +372,23 @@ function runWhenTerminalReady(term: vscode.Terminal, command: string) {
     }
   });
 
-  timeout = setTimeout(async () => {
-    // Shell integration is not available in every shell. Waiting for processId
-    // still avoids writing to the terminal before a remote shell is created.
-    try {
-      await term.processId;
-    } catch {
-      // sendText remains the only fallback when process startup cannot be observed.
-    }
+  void Promise.resolve(term.processId).then(
+    () => {
+      if (sent || term.exitStatus) return;
 
-    if (sent || term.exitStatus) return;
-    sent = true;
-    cleanup();
-    term.sendText(command, true);
-  }, SHELL_INTEGRATION_TIMEOUT_MS);
+      if (term.shellIntegration) {
+        executeWithShellIntegration(term.shellIntegration);
+      } else {
+        sent = true;
+        cleanup();
+        term.sendText(command, true);
+      }
+    },
+    () => {
+      // Keep waiting for shell integration or terminal closure if process
+      // startup cannot be observed safely.
+    }
+  );
 }
 
 function runPreset(preset: Preset, ctx: vscode.ExtensionContext) {
