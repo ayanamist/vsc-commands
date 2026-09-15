@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.3
+- Focus newly opened terminal editors when launching presets so pressing Enter does not launch another tab from the status bar button
+
 ## 0.1.2
 - Run preset commands as soon as the terminal process starts instead of always waiting three seconds when shell integration is unavailable
 
