@@ -328,13 +328,10 @@ async function copyIconIfNeeded(icon: string | undefined, presetId: string): Pro
   }
 }
 
-function getTerminalLocation(): vscode.TerminalLocation | { viewColumn: vscode.ViewColumn; preserveFocus: boolean } {
-  const anyVscode = vscode as unknown as { TerminalLocation?: { Editor?: vscode.TerminalLocation } };
-  if (anyVscode.TerminalLocation?.Editor !== undefined) {
-    return anyVscode.TerminalLocation.Editor as vscode.TerminalLocation;
-  }
-
-  return { viewColumn: vscode.ViewColumn.One, preserveFocus: false };
+function getTerminalLocation(): vscode.TerminalEditorLocationOptions {
+  // Request focus when opening the editor: show(false) can be coalesced with
+  // an in-flight editor open and cannot override its initial focus options.
+  return { viewColumn: vscode.ViewColumn.Active, preserveFocus: false };
 }
 
 function runWhenTerminalReady(term: vscode.Terminal, command: string) {
